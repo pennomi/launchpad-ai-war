@@ -22,12 +22,13 @@ class Actions(Enum):
     TurnLeft = 4
     TurnRight = 5
 
-    # Shooting
-    ShootForward = 6
+    # Attacking
+    Punch = 6  # Unleash a powerful melee attack
+    Shoot = 7  # Fire a weak bullet forward
 
     # Lame Stuff
-    DoNothing = 7
-    Suicide = 8
+    DoNothing = 8
+    Suicide = 9
 
 
 class Bot:
@@ -38,12 +39,19 @@ class Bot:
     def __init__(self, team, position: Vec3, direction: int):
         self.team = team
 
+        # Load the animations
         self._model = Actor("models/RockGolem", {
             'idle': 'models/RockGolem-idle',
             'walk': 'models/RockGolem-walk',
+            'reverse-walk': 'models/RockGolem-walk',
             'punch': 'models/RockGolem-punch',
             'death': 'models/RockGolem-death',
         })
+        self._model.setPlayRate(2.65, 'walk')
+        self._model.setPlayRate(-2.65, 'reverse-walk')
+        self._model.setPlayRate(4, 'punch')
+
+        # Initialize the model
         self._model.setBlend(frameBlend=True)
         self._model.setScale(.15, .15, .15)
         self._model.reparentTo(render)
@@ -79,7 +87,7 @@ class Bot:
 
         elif self._orders == Actions.MoveBackward:
             new_pos -= velocity
-            self.safe_loop('walk')
+            self.safe_loop('reverse-walk')
 
         elif self._orders == Actions.StrafeLeft:
             new_pos += velocity
@@ -97,9 +105,11 @@ class Bot:
             new_dir.x -= 90
             self.safe_loop('walk')
 
-        elif self._orders == Actions.ShootForward:
-            print("Shooting not implemented yet!")
-            self.safe_loop('punch')
+        elif self._orders == Actions.Punch:
+            self.punch()
+
+        elif self._orders == Actions.Shoot:
+            self.shoot()
 
         elif self._orders == Actions.DoNothing:
             self.safe_loop('idle')
@@ -123,3 +133,11 @@ class Bot:
         if not self._death_played:
             self._model.play('death')
             self._death_played = True
+
+    def punch(self) -> None:
+        print("Punching not implemented yet!")
+        self._model.play('punch')
+
+    def shoot(self) -> None:
+        print("Shooting not implemented yet!")
+        self._model.play('shoot')

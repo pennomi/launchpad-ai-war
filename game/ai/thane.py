@@ -11,6 +11,6 @@ class BoringBot(Bot):
 
 
 class RandomBot(Bot):
-    """Walk in a square and do nothing."""
+    """Do everything except Suicide."""
     def update(self, tick_number):
         return random.choice(list(Actions)[:-1])

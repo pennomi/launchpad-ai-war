@@ -52,6 +52,9 @@ class BattleArena:
         return classes
 
     def update(self, dt):
+        """Once a second, have each bot send in its orders. Then have those
+        bots animate their actions.
+        """
         self.tick_number += 1
         for c in self.bots:
             c._get_orders(self.tick_number)
