@@ -1,6 +1,7 @@
+from importlib import import_module
+import os
 import random
 from panda3d.core import Point3, Vec3
-from game.ai.thane import BoringBot, RandomBot
 
 from game.math import furthest_points
 from game.bot import Bot, Teams
@@ -25,14 +26,30 @@ class BattleArena:
         self.bots = []
         self.projectiles = []
 
-        # TODO: Import bot_classes dynamically
-        bot_classes = [BoringBot, RandomBot, Bot]
+        # Load the bots dynamically
+        bot_classes = self.get_classes()
+        print("Loading bots:", *[c.__name__ for c in bot_classes])
         for cls in bot_classes:
             self.bots.append(cls(
                 random.choice(list(Teams)),
                 Vec3(random.uniform(-3, 3), random.uniform(-3, 3), 0),
                 random.choice([0, 90, 180, 360])
             ))
+
+    def get_classes(self):
+        """Dynamically import all Bot subclasses from files at `game.ai.*`
+        and return them in a list.
+        """
+        classes = []
+        for path in os.listdir(os.path.join('game', 'ai')):
+            import_path = 'game.ai.{}'.format(path.split('.')[0])
+            module = import_module(import_path)
+            attrs = dir(module)
+            for a in attrs:
+                attr = getattr(module, a)
+                if hasattr(attr, '__bases__') and Bot in attr.__bases__:
+                    classes.append(attr)
+        return classes
 
     def update(self, dt):
         self.tick_number += 1
