@@ -2,8 +2,9 @@ from importlib import import_module
 import os
 import random
 from panda3d.core import Point3, Vec3
+from game.ai.thane import BoringBot
 
-from game.math import furthest_points
+from game.util import furthest_points
 from game.bot import Bot, Teams
 
 
@@ -56,12 +57,36 @@ class BattleArena:
         bots animate their actions.
         """
         self.tick_number += 1
-        for c in self.bots:
-            c._get_orders(self.tick_number)
-        for c in self.bots:
-            c._execute_orders(dt)
+        # First get all orders (so later bots don't have more information)
+        for b in self.bots:
+            b._get_orders(self.tick_number, self.get_visible_objects(b))
+        # Then move everyone (move order shouldn't have an advantage)
+        for b in self.bots:
+            b._execute_orders(dt)
+        # Then update the bullets (this allows dodging, if you're smart)
         for p in self.projectiles:
             p.update(dt)
+
+    def get_visible_objects(self, bot):
+        objects = []
+
+        # Set up field of view
+        angle = bot._model.getH() % 360
+        right, left = (angle - 45) % 360, (angle + 45) % 360
+        print(right, left)
+
+        for other in self.bots:
+            # Don't track self
+            if bot == other:
+                continue
+
+            # Check if the bot is inside the cone
+            v = other._model.getPos() - bot._model.getPos()
+            relative_angle = (v.angleDeg(Vec3(1, 0, 0)) - 90) % 360
+            if left <= relative_angle <= right:
+                objects.append(other)
+
+        return objects
 
     def update_camera(self, dt):
         """Try to keep everyone in view at the same time."""

@@ -2,7 +2,8 @@ from enum import Enum
 
 from direct.actor.Actor import Actor
 from direct.interval.LerpInterval import LerpPosHprInterval
-from panda3d.core import Vec3
+from panda3d.core import Vec3, NodePath
+from game.util import make_fov
 
 
 class Teams(tuple, Enum):
@@ -39,37 +40,43 @@ class Bot:
     def __init__(self, team, position: Vec3, direction: int):
         self.team = team
 
+        self._model = NodePath('bot')
+        self._model.reparentTo(render)
+
+        self._model.setPos(position)
+        self._model.setHpr(direction, 0, 0)
+        self._model.setColorScale(*self.team)
+        self._model.setScale(.15, .15, .15)
+
         # Load the animations
-        self._model = Actor("models/RockGolem", {
+        self._actor = Actor("models/RockGolem", {
             'idle': 'models/RockGolem-idle',
             'walk': 'models/RockGolem-walk',
             'reverse-walk': 'models/RockGolem-walk',
             'punch': 'models/RockGolem-punch',
             'death': 'models/RockGolem-death',
         })
-        self._model.setPlayRate(2.65, 'walk')
-        self._model.setPlayRate(-2.65, 'reverse-walk')
-        self._model.setPlayRate(4, 'punch')
+        self._actor.setPlayRate(2.65, 'walk')
+        self._actor.setPlayRate(-2.65, 'reverse-walk')
+        self._actor.setPlayRate(4, 'punch')
+        self._actor.setBlend(frameBlend=True)
+        self._actor.reparentTo(self._model)
+        self._actor.loop('idle')
+        self._actor.setH(90)
 
-        # Initialize the model
-        self._model.setBlend(frameBlend=True)
-        self._model.setScale(.15, .15, .15)
-        self._model.reparentTo(render)
-        self._model.loop('idle')
-        self._model.setPos(position)
-        self._model.setHpr(direction, 0, 0)
-        self._model.setColorScale(*self.team)
+        fov = make_fov()
+        fov.reparentTo(self._model)
 
-    def update(self, tick_number):
+    def update(self, tick_number, visible_objects):
         return Actions.DoNothing
 
-    def _get_orders(self, tick_number):
+    def _get_orders(self, tick_number, visible_objects):
         if self._hp <= 0:
             return
 
         # noinspection PyBroadException
         try:
-            self._orders = self.update(tick_number)
+            self._orders = self.update(tick_number, visible_objects)
         except Exception as e:
             print(type(self), e)
             self._orders = Actions.Suicide
@@ -78,7 +85,7 @@ class Bot:
         # Pre-calculate some useful things
         new_pos = self._model.getPos()
         new_dir = self._model.getHpr()
-        velocity = render.getRelativeVector(self._model, Vec3(0, -1, 0))
+        velocity = render.getRelativeVector(self._model, Vec3(1, 0, 0))
         velocity.normalize()
 
         if self._orders == Actions.MoveForward:
@@ -123,21 +130,22 @@ class Bot:
             self.die()
 
         # Animate the motion
-        LerpPosHprInterval(self._model, tick_length, new_pos, new_dir).start()
+        tick = tick_length - 0.05  # Shave off a tiny bit to finish the interval
+        LerpPosHprInterval(self._model, tick, new_pos, new_dir).start()
 
     def safe_loop(self, animation: str) -> None:
-        if self._model.getCurrentAnim() != animation:
-            self._model.loop(animation)
+        if self._actor.getCurrentAnim() != animation:
+            self._actor.loop(animation)
 
     def die(self) -> None:
         if not self._death_played:
-            self._model.play('death')
+            self._actor.play('death')
             self._death_played = True
 
     def punch(self) -> None:
         print("Punching not implemented yet!")
-        self._model.play('punch')
+        self._actor.play('punch')
 
     def shoot(self) -> None:
         print("Shooting not implemented yet!")
-        self._model.play('shoot')
+        self._actor.play('shoot')
