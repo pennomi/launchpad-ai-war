@@ -37,7 +37,7 @@ class Bot:
     _hp = 5
     _death_played = False
 
-    def __init__(self, team, position: Vec3, direction: int):
+    def __init__(self, team, position, direction):
         self.team = team
 
         self._model = NodePath('bot')
@@ -133,19 +133,19 @@ class Bot:
         tick = tick_length - 0.05  # Shave off a tiny bit to finish the interval
         LerpPosHprInterval(self._model, tick, new_pos, new_dir).start()
 
-    def safe_loop(self, animation: str) -> None:
+    def safe_loop(self, animation):
         if self._actor.getCurrentAnim() != animation:
             self._actor.loop(animation)
 
-    def die(self) -> None:
+    def die(self):
         if not self._death_played:
             self._actor.play('death')
             self._death_played = True
 
-    def punch(self) -> None:
+    def punch(self):
         print("Punching not implemented yet!")
         self._actor.play('punch')
 
-    def shoot(self) -> None:
+    def shoot(self):
         print("Shooting not implemented yet!")
         self._actor.play('shoot')
