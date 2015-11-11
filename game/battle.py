@@ -36,9 +36,14 @@ class BattleArena:
         for cls in bot_classes:
             self.bots.append(cls(
                 random.choice([Teams.Blue, Teams.Red, Teams.Green]),
-                Vec3(random.uniform(-3, 3), random.uniform(-3, 3), 0),
+                Vec3(random.randint(-3, 3), random.randint(-3, 3), 0),
                 random.choice([0, 90, 180, 360])
             ))
+
+    def get_object_at_position(self, v):
+        for b in self.bots:
+            if b.get_position() == v:
+                print("hello")
 
     def get_classes(self):
         """Dynamically import all Bot subclasses from files at `game.ai.*`
@@ -70,11 +75,13 @@ class BattleArena:
         for p in self.projectiles:
             p.update(dt)
 
+        print(self.get_object_at_position(Vec3(0, 0, 0)))
+
     def get_visible_objects(self, bot):
         objects = []
 
         # Get the direction the bot is facing
-        facing = bot.get_heading_vector()
+        facing = bot.get_direction()
 
         for other in self.bots:
             # Don't track self

@@ -87,7 +87,7 @@ class Bot:
             print(type(self), e)
             self._orders = Actions.Suicide
 
-    def get_heading_vector(self):
+    def get_direction(self):
         v = render.getRelativeVector(self._model, Vec3(0, 1, 0))
         v.normalize()
         return v
@@ -96,7 +96,7 @@ class Bot:
         # Pre-calculate some useful things
         new_pos = self._model.getPos()
         new_dir = self._model.getHpr()
-        velocity = self.get_heading_vector()
+        velocity = self.get_direction()
 
         if self._orders == Actions.MoveForward:
             new_pos += velocity
