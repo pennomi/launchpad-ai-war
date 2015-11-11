@@ -11,10 +11,10 @@ class BoringBot(Bot):
         return Actions.TurnLeft
 
 
-# class LazyBot(Bot):
-#     """Walk in a square and do nothing."""
-#     def update(self, tick_number, visible_objects):
-#         return Actions.DoNothing
+class LazyBot(Bot):
+    """Walk in a square and do nothing."""
+    def update(self, tick_number, visible_objects):
+        return Actions.DoNothing
 
 
 
