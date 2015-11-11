@@ -65,8 +65,8 @@ class Bot:
         self._actor.loop('idle')
         self._actor.setH(90)
 
-        fov = make_fov()
-        fov.reparentTo(self._model)
+        #fov = make_fov()
+        #fov.reparentTo(self._model)
 
     def update(self, tick_number, visible_objects):
         return Actions.DoNothing
