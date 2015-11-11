@@ -25,12 +25,12 @@ class Actions(Enum):
     TurnAround = 6
 
     # Attacking
-    Punch = 6  # Unleash a powerful melee attack
-    Shoot = 7  # Fire a weak bullet forward
+    Punch = 7  # Unleash a powerful melee attack
+    Shoot = 8  # Fire a weak bullet forward
 
     # Lame Stuff
-    DoNothing = 8
-    Suicide = 9
+    DoNothing = 9
+    Suicide = 10
 
 
 class Bot:
@@ -63,16 +63,21 @@ class Bot:
         self._actor.setBlend(frameBlend=True)
         self._actor.reparentTo(self._model)
         self._actor.loop('idle')
-        self._actor.setH(90)
+        self._actor.setH(180)
 
-        #fov = make_fov()
-        #fov.reparentTo(self._model)
+        fov = make_fov()
+        fov.reparentTo(self._model)
 
     def update(self, tick_number, visible_objects):
         return Actions.DoNothing
 
+    def get_position(self):
+        return Vec3(self._model.getPos())
+
     def _get_orders(self, tick_number, visible_objects):
+        # If the health is too low, die.
         if self._hp <= 0:
+            self._orders = Actions.Suicide
             return
 
         # noinspection PyBroadException
@@ -82,12 +87,16 @@ class Bot:
             print(type(self), e)
             self._orders = Actions.Suicide
 
+    def get_heading_vector(self):
+        v = render.getRelativeVector(self._model, Vec3(0, 1, 0))
+        v.normalize()
+        return v
+
     def _execute_orders(self, tick_length):
         # Pre-calculate some useful things
         new_pos = self._model.getPos()
         new_dir = self._model.getHpr()
-        velocity = render.getRelativeVector(self._model, Vec3(1, 0, 0))
-        velocity.normalize()
+        velocity = self.get_heading_vector()
 
         if self._orders == Actions.MoveForward:
             new_pos += velocity

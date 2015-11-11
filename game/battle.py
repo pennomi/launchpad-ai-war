@@ -19,6 +19,10 @@ class BattleArena:
         self.model = loader.loadModel("models/level1.egg")
         self.model.reparentTo(render)
 
+        # Initial camera state
+        camera.setPos(render, 10, 0, 30)
+        camera.lookAt(Point3(0, 0, 0))
+
         # Set up the map (for later)
         self.map = [[0 for _ in range(30)] for _ in range(30)]
 
@@ -69,20 +73,23 @@ class BattleArena:
     def get_visible_objects(self, bot):
         objects = []
 
-        # Set up field of view
-        angle = bot._model.getH() % 360
-        right, left = (angle - 45) % 360, (angle + 45) % 360
-        print(right, left)
+        # Get the direction the bot is facing
+        facing = bot.get_heading_vector()
 
         for other in self.bots:
             # Don't track self
             if bot == other:
                 continue
 
-            # Check if the bot is inside the cone
+            # Get the relative vector of the bots
             v = other._model.getPos() - bot._model.getPos()
-            relative_angle = (v.angleDeg(Vec3(1, 0, 0)) - 90) % 360
-            if left <= relative_angle <= right:
+            v.normalize()
+
+            # Get the angle between the two vectors
+            relative_angle = facing.relativeAngleDeg(v)
+
+            # Check if it's small enough
+            if abs(relative_angle) < 45:  # ie. a 90 degree cone
                 objects.append(other)
 
         return objects

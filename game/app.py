@@ -10,8 +10,7 @@ from game.battle import BattleArena
 from pandac.PandaModules import loadPrcFileData
 
 # Window config
-loadPrcFileData("", "window-title Test Game")
-loadPrcFileData("", "win-size 1200 900")
+loadPrcFileData("", "window-title Launchpad AI War")
 
 
 ORDER_DURATION = 1.0
