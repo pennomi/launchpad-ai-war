@@ -25,12 +25,12 @@ class Actions(Enum):
     TurnAround = 6
 
     # Attacking
-    Punch = 6  # Unleash a powerful melee attack
-    Shoot = 7  # Fire a weak bullet forward
+    Punch = 7 # Unleash a powerful melee attack
+    Shoot = 8 # Fire a weak bullet forward
 
     # Lame Stuff
-    DoNothing = 8
-    Suicide = 9
+    DoNothing = 9
+    Suicide = 10
 
 
 class Bot:
@@ -65,8 +65,8 @@ class Bot:
         self._actor.loop('idle')
         self._actor.setH(90)
 
-        fov = make_fov()
-        fov.reparentTo(self._model)
+        #fov = make_fov()
+        #fov.reparentTo(self._model)
 
     def update(self, tick_number, visible_objects):
         return Actions.DoNothing
