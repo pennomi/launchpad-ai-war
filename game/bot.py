@@ -7,7 +7,7 @@ from game.util import make_fov
 
 
 class Teams(tuple, Enum):
-    Blue = (.25, .25, 1, 1)
+    Blue = (0, 0, 1, 1)
     Green = (0, 1, 0, 1)
     Red = (1, 0, 0, 1)
 
@@ -65,8 +65,8 @@ class Bot:
         self._actor.loop('idle')
         self._actor.setH(180)
 
-        fov = make_fov()
-        fov.reparentTo(self._model)
+        # fov = make_fov()
+        # fov.reparentTo(self._model)
 
     def update(self, tick_number, visible_objects):
         return Actions.DoNothing

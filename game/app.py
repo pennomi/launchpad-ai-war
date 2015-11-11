@@ -29,14 +29,13 @@ class MainApp(ShowBase):
         # Fog
         exp_fog = core.Fog("scene-wide-fog")
         exp_fog.setColor(0.0, 0.0, 0.0)
-        exp_fog.setExpDensity(0.004)
+        exp_fog.setExpDensity(0.01)
         self.render.setFog(exp_fog)
         self.setBackgroundColor(0, 0, 0)
 
         # Lights
         spotlight = core.Spotlight("spotlight")
         spotlight.setColor(core.Vec4(1, 1, 1, 1))
-        spotlight.setLens(core.PerspectiveLens())
         spotlight.setShadowCaster(True, 2048, 2048)
         spotlight_node = self.render.attachNewNode(spotlight)
         spotlight_node.setPos(10, 60, 50)
@@ -44,7 +43,7 @@ class MainApp(ShowBase):
         self.render.setLight(spotlight_node)
 
         ambient_light = core.AmbientLight("ambientLight")
-        ambient_light.setColor(core.Vec4(.25, .25, .25, 1))
+        ambient_light.setColor(core.Vec4(.5, .5, .5, 1))
         self.render.setLight(self.render.attachNewNode(ambient_light))
 
         # Enable the shader generator for the receiving nodes
