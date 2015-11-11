@@ -22,6 +22,7 @@ class Actions(Enum):
     # Rotation
     TurnLeft = 4
     TurnRight = 5
+    TurnAround = 6
 
     # Attacking
     Punch = 6  # Unleash a powerful melee attack
@@ -106,6 +107,10 @@ class Bot:
 
         elif self._orders == Actions.TurnLeft:
             new_dir.x += 90
+            self.safe_loop('walk')
+
+        elif self._orders == Actions.TurnAround:
+            new_dir.x += 180
             self.safe_loop('walk')
 
         elif self._orders == Actions.TurnRight:
