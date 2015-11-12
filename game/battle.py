@@ -16,8 +16,12 @@ class BattleArena:
 
     def __init__(self):
         # Load the arena model
-        self.model = loader.loadModel("models/level1.egg")
+        self.model = loader.loadModel("models/Arena.egg")
         self.model.reparentTo(render)
+
+        # Initial camera state
+        camera.setPos(render, 10, 0, 30)
+        camera.lookAt(Point3(0, 0, 0))
 
         # Set up the map (for later)
         self.map = [[0 for _ in range(30)] for _ in range(30)]
@@ -32,9 +36,41 @@ class BattleArena:
         for cls in bot_classes:
             self.bots.append(cls(
                 random.choice([Teams.Blue, Teams.Red, Teams.Green]),
-                Vec3(random.uniform(-3, 3), random.uniform(-3, 3), 0),
+                Vec3(random.randint(-6, 6), random.randint(-6, 6), 0),
                 random.choice([0, 90, 180, 360])
             ))
+
+    def update(self, dt):
+        """Once a second, have each bot send in its orders. Then have those
+        bots animate their actions.
+        """
+        self.tick_number += 1
+        # First get all orders (so later bots don't have more information)
+        for b in self.bots:
+            b._get_orders(self.tick_number, self.get_visible_objects(b))
+        # Then move everyone (move order shouldn't have an advantage)
+        for b in self.bots:
+            b._execute_orders(dt, self)
+        # Then update the bullets (this allows dodging, if you're smart)
+        for p in self.projectiles:
+            p.update(dt)
+        # Calculate any collisions between any combination of bots and bullets
+        self.kill_overlapping_bots()
+
+    def get_object_at_position(self, v):
+        for b in self.bots:
+            if b.get_position() == v and b._hp > 0:
+                return b
+        return None
+
+    def kill_overlapping_bots(self):
+        for b in self.bots:
+            if b._hp <= 0:
+                continue
+            other = self.get_object_at_position(b.get_position())
+            if other and b and other != b:
+                b.take_damage(999)
+                other.take_damage(999)
 
     def get_classes(self):
         """Dynamically import all Bot subclasses from files at `game.ai.*`
@@ -51,38 +87,29 @@ class BattleArena:
                     classes.add(attr)
         return classes
 
-    def update(self, dt):
-        """Once a second, have each bot send in its orders. Then have those
-        bots animate their actions.
-        """
-        self.tick_number += 1
-        # First get all orders (so later bots don't have more information)
-        for b in self.bots:
-            b._get_orders(self.tick_number, self.get_visible_objects(b))
-        # Then move everyone (move order shouldn't have an advantage)
-        for b in self.bots:
-            b._execute_orders(dt)
-        # Then update the bullets (this allows dodging, if you're smart)
-        for p in self.projectiles:
-            p.update(dt)
-
     def get_visible_objects(self, bot):
+        if bot._hp <= 0:
+            return []
+
         objects = []
 
-        # Set up field of view
-        angle = bot._model.getH() % 360
-        right, left = (angle - 45) % 360, (angle + 45) % 360
-        print(right, left)
+        # Get the direction the bot is facing
+        facing = bot.get_direction()
 
         for other in self.bots:
             # Don't track self
-            if bot == other:
+            if bot == other or other._hp <= 0:
                 continue
 
-            # Check if the bot is inside the cone
+            # Get the relative vector of the bots
             v = other._model.getPos() - bot._model.getPos()
-            relative_angle = (v.angleDeg(Vec3(1, 0, 0)) - 90) % 360
-            if left <= relative_angle <= right:
+            v.normalize()
+
+            # Get the angle between the two vectors
+            relative_angle = facing.relativeAngleDeg(v)
+
+            # Check if it's small enough
+            if abs(relative_angle) <= 45:  # ie. a 90 degree cone
                 objects.append(other)
 
         return objects
@@ -100,14 +127,14 @@ class BattleArena:
             direction.normalize()
             camera_offset = direction.cross(Vec3(0, 0, 1))
             camera_offset.normalize()
-            camera_offset *= 10
+            camera_offset *= 20
 
             # Choose the way that's closer to the current camera position
             d1 = abs((center + camera_offset - self.camera_pos).length())
             d2 = abs((center - camera_offset - self.camera_pos).length())
             camera_pos = Vec3(center)
             camera_pos += camera_offset if d1 < d2 else -camera_offset
-            camera_pos.z = 10
+            camera_pos.z = 25
         else:
             camera_pos = Vec3(10, 10, 10)
             center = Vec3(0, 0, 0)
