@@ -2,7 +2,7 @@ from enum import Enum
 
 from direct.actor.Actor import Actor
 from direct.interval.LerpInterval import LerpPosHprInterval
-from panda3d.core import Vec3, NodePath
+from panda3d.core import Vec3, NodePath, TextNode
 from game.util import make_fov
 
 
@@ -69,6 +69,15 @@ class Bot:
         self._actor.loop('idle')
         self._actor.setH(180)
 
+        # Floating Label
+        text = TextNode('node name')
+        text.setText(self.__class__.__name__)
+        text.setAlign(TextNode.ACenter)
+        self._name_label = self._model.attachNewNode(text)
+        self._name_label.setBillboardPointEye()
+        self._name_label.setPos(Vec3(0, 0, 6))
+
+        # Debug Field of View Cones
         # fov = make_fov()
         # fov.reparentTo(self._model)
 
@@ -175,7 +184,9 @@ class Bot:
     def take_damage(self, amount):
         self._hp -= amount
         if self._hp <= 0:
-            self._interval.pause()
+            self._name_label.hide()
+            if self._interval:
+                self._interval.pause()
             if not self._death_played:
                 self._actor.play('death')
                 self._death_played = True

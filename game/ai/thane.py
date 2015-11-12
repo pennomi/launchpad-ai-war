@@ -17,7 +17,7 @@ class LazyBot(Bot):
 
 
 class ZeroBot(Bot):
-    """Try to get to the center of the board."""
+    """Try to get to the center of the board, then Punch Stuff in a circle."""
     def update(self, tick_number, visible_objects):
         p = self.get_position()
         v = self.get_direction()
@@ -31,4 +31,17 @@ class ZeroBot(Bot):
                 return Actions.MoveForward
             else:
                 return Actions.TurnLeft
-        return Actions.Punch
+        return Actions.Punch if tick_number % 2 else Actions.TurnLeft
+
+
+class HunterBot(Bot):
+    """Move toward enemies and punch them."""
+    def update(self, tick_number, visible_objects):
+        for v in visible_objects:
+            if v.get_position() == self.get_position() + self.get_direction():
+                return Actions.Punch
+
+        if visible_objects:
+            return Actions.MoveForward
+
+        return Actions.TurnLeft

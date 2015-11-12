@@ -88,6 +88,9 @@ class BattleArena:
         return classes
 
     def get_visible_objects(self, bot):
+        if bot._hp <= 0:
+            return []
+
         objects = []
 
         # Get the direction the bot is facing
@@ -95,7 +98,7 @@ class BattleArena:
 
         for other in self.bots:
             # Don't track self
-            if bot == other:
+            if bot == other or other._hp <= 0:
                 continue
 
             # Get the relative vector of the bots
@@ -106,7 +109,7 @@ class BattleArena:
             relative_angle = facing.relativeAngleDeg(v)
 
             # Check if it's small enough
-            if abs(relative_angle) < 45:  # ie. a 90 degree cone
+            if abs(relative_angle) <= 45:  # ie. a 90 degree cone
                 objects.append(other)
 
         return objects
