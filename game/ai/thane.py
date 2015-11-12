@@ -11,7 +11,7 @@ class BoringBot(Bot):
 
 
 class LazyBot(Bot):
-    """Walk in a square and do nothing."""
+    """Just punch stuff."""
     def update(self, tick_number, visible_objects):
         return Actions.Punch
 

@@ -34,11 +34,13 @@ class Actions(Enum):
 
 
 class Bot:
-    _orders = Actions.DoNothing
-    _hp = 5
-    _death_played = False
 
     def __init__(self, team, position, direction):
+        self._orders = Actions.DoNothing
+        self._hp = 5
+        self._death_played = False
+        self._interval = None
+
         self.team = team
 
         self._model = NodePath('bot')
@@ -56,10 +58,12 @@ class Bot:
             'reverse-walk': 'models/RockGolem-walk',
             'punch': 'models/RockGolem-punch',
             'death': 'models/RockGolem-death',
+            'throw': 'models/RockGolem-throw',
         })
         self._actor.setPlayRate(2.65, 'walk')
         self._actor.setPlayRate(-2.65, 'reverse-walk')
         self._actor.setPlayRate(4, 'punch')
+        self._actor.setPlayRate(5.25, 'throw')
         self._actor.setBlend(frameBlend=True)
         self._actor.reparentTo(self._model)
         self._actor.loop('idle')
@@ -95,7 +99,7 @@ class Bot:
             print(type(self), e)
             self._orders = Actions.Suicide
 
-    def _execute_orders(self, tick_length):
+    def _execute_orders(self, tick_length, battle):
         # Pre-calculate some useful things
         new_pos = self._model.getPos()
         new_dir = self._model.getHpr()
@@ -130,39 +134,48 @@ class Bot:
             self.safe_loop('walk')
 
         elif self._orders == Actions.Punch:
-            self.punch()
+            self.punch(battle)
 
         elif self._orders == Actions.Shoot:
-            self.shoot()
+            self.shoot(battle)
 
         elif self._orders == Actions.DoNothing:
             self.safe_loop('idle')
 
         elif self._orders == Actions.Suicide:
             self._hp = 0
-            self.die()
+            self.take_damage(999)
 
         else:  # Bad orders detected! Kill this bot.
             self._hp = 0
-            self.die()
+            self.take_damage(999)
 
         # Animate the motion
+        if self._hp <= 0:
+            return
         tick = tick_length - 0.05  # Shave off a tiny bit to finish the interval
-        LerpPosHprInterval(self._model, tick, new_pos, new_dir).start()
+        self._interval = LerpPosHprInterval(self._model, tick, new_pos, new_dir)
+        self._interval.start()
 
     def safe_loop(self, animation):
-        if self._actor.getCurrentAnim() != animation:
+        if self._actor.getCurrentAnim() != animation and self._hp > 0:
             self._actor.loop(animation)
 
-    def die(self):
-        if not self._death_played:
-            self._actor.play('death')
-            self._death_played = True
-
-    def punch(self):
-        print("Punching not implemented yet!")
+    def punch(self, battle):
         self._actor.play('punch')
+        hazard = self.get_direction() + self.get_position()
+        bot = battle.get_object_at_position(hazard)
+        if isinstance(bot, Bot):
+            bot.take_damage(5)
 
-    def shoot(self):
+    def shoot(self, battle):
         print("Shooting not implemented yet!")
-        self._actor.play('shoot')
+        self._actor.play('throw')
+
+    def take_damage(self, amount):
+        self._hp -= amount
+        if self._hp <= 0:
+            self._interval.pause()
+            if not self._death_played:
+                self._actor.play('death')
+                self._death_played = True

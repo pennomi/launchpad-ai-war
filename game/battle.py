@@ -40,10 +40,37 @@ class BattleArena:
                 random.choice([0, 90, 180, 360])
             ))
 
+    def update(self, dt):
+        """Once a second, have each bot send in its orders. Then have those
+        bots animate their actions.
+        """
+        self.tick_number += 1
+        # First get all orders (so later bots don't have more information)
+        for b in self.bots:
+            b._get_orders(self.tick_number, self.get_visible_objects(b))
+        # Then move everyone (move order shouldn't have an advantage)
+        for b in self.bots:
+            b._execute_orders(dt, self)
+        # Then update the bullets (this allows dodging, if you're smart)
+        for p in self.projectiles:
+            p.update(dt)
+        # Calculate any collisions between any combination of bots and bullets
+        self.kill_overlapping_bots()
+
     def get_object_at_position(self, v):
         for b in self.bots:
-            if b.get_position() == v:
-                print("hello")
+            if b.get_position() == v and b._hp > 0:
+                return b
+        return None
+
+    def kill_overlapping_bots(self):
+        for b in self.bots:
+            if b._hp <= 0:
+                continue
+            other = self.get_object_at_position(b.get_position())
+            if other and b and other != b:
+                b.take_damage(999)
+                other.take_damage(999)
 
     def get_classes(self):
         """Dynamically import all Bot subclasses from files at `game.ai.*`
@@ -59,23 +86,6 @@ class BattleArena:
                 if hasattr(attr, '__bases__') and Bot in attr.__bases__:
                     classes.add(attr)
         return classes
-
-    def update(self, dt):
-        """Once a second, have each bot send in its orders. Then have those
-        bots animate their actions.
-        """
-        self.tick_number += 1
-        # First get all orders (so later bots don't have more information)
-        for b in self.bots:
-            b._get_orders(self.tick_number, self.get_visible_objects(b))
-        # Then move everyone (move order shouldn't have an advantage)
-        for b in self.bots:
-            b._execute_orders(dt)
-        # Then update the bullets (this allows dodging, if you're smart)
-        for p in self.projectiles:
-            p.update(dt)
-
-        print(self.get_object_at_position(Vec3(0, 0, 0)))
 
     def get_visible_objects(self, bot):
         objects = []
