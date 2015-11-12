@@ -36,7 +36,7 @@ class BattleArena:
         for cls in bot_classes:
             self.bots.append(cls(
                 random.choice([Teams.Blue, Teams.Red, Teams.Green]),
-                Vec3(random.randint(-3, 3), random.randint(-3, 3), 0),
+                Vec3(random.randint(-6, 6), random.randint(-6, 6), 0),
                 random.choice([0, 90, 180, 360])
             ))
 
@@ -127,14 +127,14 @@ class BattleArena:
             direction.normalize()
             camera_offset = direction.cross(Vec3(0, 0, 1))
             camera_offset.normalize()
-            camera_offset *= 10
+            camera_offset *= 20
 
             # Choose the way that's closer to the current camera position
             d1 = abs((center + camera_offset - self.camera_pos).length())
             d2 = abs((center - camera_offset - self.camera_pos).length())
             camera_pos = Vec3(center)
             camera_pos += camera_offset if d1 < d2 else -camera_offset
-            camera_pos.z = 10
+            camera_pos.z = 25
         else:
             camera_pos = Vec3(10, 10, 10)
             center = Vec3(0, 0, 0)
