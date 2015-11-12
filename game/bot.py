@@ -72,7 +72,15 @@ class Bot:
         return Actions.DoNothing
 
     def get_position(self):
-        return Vec3(self._model.getPos())
+        """Return a rounded version of the position vector."""
+        p = self._model.getPos()
+        return Vec3(round(p.x, 2), round(p.y, 2), round(p.z, 2))
+
+    def get_direction(self):
+        """Return a rounded version of the direction vector."""
+        v = render.getRelativeVector(self._model, Vec3(0, 1, 0))
+        v.normalize()
+        return Vec3(round(v.x, 2), round(v.y, 2), round(v.z, 2))
 
     def _get_orders(self, tick_number, visible_objects):
         # If the health is too low, die.
@@ -86,11 +94,6 @@ class Bot:
         except Exception as e:
             print(type(self), e)
             self._orders = Actions.Suicide
-
-    def get_direction(self):
-        v = render.getRelativeVector(self._model, Vec3(0, 1, 0))
-        v.normalize()
-        return v
 
     def _execute_orders(self, tick_length):
         # Pre-calculate some useful things

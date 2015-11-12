@@ -1,4 +1,3 @@
-import random
 import math
 from game.bot import Bot, Actions
 
@@ -18,12 +17,18 @@ class LazyBot(Bot):
 
 
 class ZeroBot(Bot):
-    """Do everything except Suicide."""
+    """Try to get to the center of the board."""
     def update(self, tick_number, visible_objects):
         p = self.get_position()
         v = self.get_direction()
         if p.x != 0:
-            if math.copysign(1, p.x) != -math.copysign(1, v.x):
-                return
-        elif p
-        return random.choice(list(Actions)[:-1])
+            if v.x != 0 and math.copysign(1, p.x) == -math.copysign(1, v.x):
+                return Actions.MoveForward
+            else:
+                return Actions.TurnLeft
+        elif p.y != 0:
+            if v.y != 0 and math.copysign(1, p.y) == -math.copysign(1, v.y):
+                return Actions.MoveForward
+            else:
+                return Actions.TurnLeft
+        return Actions.Punch
