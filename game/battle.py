@@ -16,7 +16,7 @@ class BattleArena:
 
     def __init__(self):
         # Load the arena model
-        self.model = loader.loadModel("models/level1.egg")
+        self.model = loader.loadModel("models/Arena.egg")
         self.model.reparentTo(render)
 
         # Initial camera state

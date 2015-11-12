@@ -49,7 +49,7 @@ class Bot:
         self._model.setPos(position)
         self._model.setHpr(direction, 0, 0)
         self._model.setColorScale(*self.team)
-        self._model.setScale(.15, .15, .15)
+        self._model.setScale(.2, .2, .2)
 
         # Load the animations
         self._actor = Actor("models/RockGolem", {

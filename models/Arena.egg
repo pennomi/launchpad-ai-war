@@ -1,0 +1,71 @@
+<CoordinateSystem> { Z-up } 
+<Material> Grid {
+  <Scalar> diffr { 0.640000 }
+  <Scalar> diffg { 0.640000 }
+  <Scalar> diffb { 0.640000 }
+  <Scalar> specr { 0.500000 }
+  <Scalar> specg { 0.500000 }
+  <Scalar> specb { 0.500000 }
+  <Scalar> shininess { 12.5 }
+  <Scalar> emitr { 0.000000 }
+  <Scalar> emitg { 0.000000 }
+  <Scalar> emitb { 0.000000 }
+}
+
+<Texture> Grid {
+  "./tex/grid.png"
+  <Scalar> envtype { MODULATE }
+  <Scalar> minfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> magfilter { LINEAR_MIPMAP_LINEAR }
+  <Scalar> wrap { REPEAT }
+}
+
+  <Group> Plane {
+    <Transform> {
+      <Matrix4> {
+        12.500000 0.000000 0.000000 0.000000 
+        0.000000 12.500000 0.000000 0.000000 
+        0.000000 0.000000 12.500000 0.000000 
+        0.000000 0.000000 0.000000 1.000000 
+      }
+    }
+    
+    <VertexPool> Plane {
+    
+      <Vertex> 0 {
+        -12.5 -12.5 0.0
+        
+        <UV>  {
+          -5.498749 -5.498750
+        }
+      }
+      <Vertex> 1 {
+        12.5 -12.5 0.0
+        
+        <UV>  {
+          6.998751 -5.498750
+        }
+      }
+      <Vertex> 2 {
+        12.5 12.5 0.0
+        
+        <UV>  {
+          6.998751 6.998751
+        }
+      }
+      <Vertex> 3 {
+        -12.5 12.5 0.0
+        
+        <UV>  {
+          -5.498750 6.998751
+        }
+      }}
+    
+    
+    <Polygon> {
+      <TRef> { Grid }
+      <MRef> { Grid }
+      <Normal> {0.000000 0.000000 1.000000}
+      <VertexRef> { 0 1 2 3 <Ref> { Plane }}
+    }
+  }

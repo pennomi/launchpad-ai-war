@@ -43,7 +43,7 @@ class MainApp(ShowBase):
         self.render.setLight(spotlight_node)
 
         ambient_light = core.AmbientLight("ambientLight")
-        ambient_light.setColor(core.Vec4(.5, .5, .5, 1))
+        ambient_light.setColor(core.Vec4(.75, .75, .75, 1))
         self.render.setLight(self.render.attachNewNode(ambient_light))
 
         # Enable the shader generator for the receiving nodes
