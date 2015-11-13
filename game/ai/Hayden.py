@@ -11,7 +11,8 @@ def update(self, tick_number, visible_objects):
         if visible_objects:
             return Actions.MoveForward
 			
-		else Actions.TurnAround
+        else:
+            return Actions.TurnAround
 		
         return Actions.TurnLeft
 
