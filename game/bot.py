@@ -96,6 +96,9 @@ class Bot:
         v.normalize()
         return Vec3(round(v.x, 2), round(v.y, 2), round(v.z, 2))
 
+    def get_name(self):
+        return self.__class__.__name__
+
     def _get_orders(self, tick_number, visible_objects):
         # If the health is too low, die.
         if self._hp <= 0:
