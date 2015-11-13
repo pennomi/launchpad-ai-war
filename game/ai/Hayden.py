@@ -3,8 +3,14 @@ from game.bot import Bot,  Actions
 
 
 class Haydenbot (Bot):
-	def update(self, tick_number, visible_objects):
-		if tick_number % 3:
-			return Actions.MoveForward
-		return Actions.TurnLeft
+def update(self, tick_number, visible_objects):
+        for v in visible_objects:
+            if v.get_position() == self.get_position() + self.get_direction():
+                return Actions.Punch
+
+        if visible_objects:
+            return Actions.MoveForward
+
+        return Actions.TurnLeft
 		
+		else Actions.TurnAround
