@@ -1,54 +1,47 @@
-import random
+import math
 from game.bot import Bot, Actions
 from panda3d.core import Vec3, NodePath
 
 __author__ = 'Davin'
 
 
-# class SentryBot1(Bot):
-#     """Walk in a square and do nothing."""
-#     def update(self, tick_number, visible_objects):
-#         print(visible_objects)
-#         if tick_number % 3:
-#             return Actions.MoveForward
-#
-#         return Actions.TurnAround
-#
-#
-class SentryBot2(Bot):
+def getEnemies(bot):
+     for v in bot.visible_objects:
+         if  not v in bot.team:
+             return v
+
+
+class TrackerHalelujiaBossBot1(Bot):
     """Walk in a square and do nothing."""
     def update(self, tick_number, visible_objects):
-        print(visible_objects)
-        if tick_number % 3:
+        for v in visible_objects:
+            if v.get_position() == self.get_position() + self.get_direction():
+                return Actions.Punch
+            elif v.get_position() == self.get_position() + 10:
+                return Actions.TurnAround
+            else:
+                return Actions.MoveForward
+
+
+
+        if visible_objects:
+            return Actions.TurnLeft
+
+        return Actions.TurnRight
+
+
+class SentryBot2(Bot):
+    """pace back and forth and kill anything found."""
+    def update(self, tick_number, visible_objects):
+        for v in visible_objects:
+            if v.get_position() == self.get_position() + self.get_direction():
+
+                return Actions.Punch
+
+        if visible_objects:
             return Actions.MoveForward
 
         return Actions.TurnAround
-
-
-class Trackbot1(Bot):
-    """Walk in a square and do nothing."""
-    def update(self, tick_number, visible_objects):
-        Trackbot2._model = NodePath('bot')
-        Trackbot2.__model.getPos()
-
-        print(visible_objects)
-        if tick_number % 3:
-            return Actions.MoveForward
-
-        return Actions.TurnLeft
-
-
-class Trackbot2():
-    """Walk in a square and do nothing."""
-    def update(self, tick_number, visible_objects):
-        Trackbot1._model = NodePath('bot')
-        Trackbot1.__model.getPos()
-
-        print(visible_objects)
-        if tick_number % 3:
-            return Actions.MoveForward
-
-        return Actions.TurnLeft
 
 
 class GimickBot(Bot):
@@ -56,44 +49,49 @@ class GimickBot(Bot):
     x = -1
     """Ten successive moves"""
     def update(self, tick_number, visible_objects):
-        self.x += 1
-        self.x %= len(self.MOVES) - 1
-        print(self.x)
-        return self.MOVES[self.x]
+        for v in visible_objects:
+            if v.get_position() == self.get_position() + self.get_direction():
+                return Actions.Punch
+
+        if visible_objects:
+            self.x += 1
+            self.x %= len(self.MOVES) - 1
+
+            return self.MOVES[self.x]
+
+        return Actions.TurnLeft
 
 
+class SpinBot(Bot):
+
+    """Ten successive moves"""
+    def update(self, tick_number, visible_objects):
+        for v in visible_objects:
+            v._death_played()
+            if v.get_position() == self.get_position() + self.get_direction():
+                return Actions.Punch
+
+        return Actions.TurnLeft
 
 
-
-# class ScanBot1(Bot):
-#     """Walk in a square and do nothing."""
+# class SpinBot2(Bot):
+#
+#     """Ten successive moves"""
 #     def update(self, tick_number, visible_objects):
-#         print(visible_objects)
-#         if tick_number % 3:
-
-
-# class SpinBot(Bot):
-#     """Walk in a square and do nothing."""
-#     def update(self, tick_number, visible_objects):
-#         print(visible_objects)
-#         if tick_number % 1:
-#             return Actions.MoveForward
+#         for v in visible_objects:
+#             if v.get_position() == self.get_position() + self.get_direction():
+#                 return Actions.Punch
 #
 #         return Actions.TurnLeft
-
-
-# class FastBot(Bot):
 #
-#     """Walk in a square and do nothing."""
+#
+#
+# class SpinBot3(Bot):
+#
+#     """Ten successive moves"""
 #     def update(self, tick_number, visible_objects):
-#         new_dir = ScanBot1._model.getHpr()
-#         print(visible_objects)
-#         if tick_number % 1:
-#             return Actions.MoveForward
+#         for v in visible_objects:
+#             if v.get_position() == self.get_position() + self.get_direction():
+#                 return Actions.Punch
 #
-#         new_dir -= 30
-#
-# class LazyBot(Bot):
-#     """Walk in a square and do nothing."""
-#     def update(self, tick_number, visible_objects):
-#         return Actions.DoNothing
+#         return Actions.TurnLeft
