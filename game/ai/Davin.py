@@ -17,17 +17,19 @@ class TrackerHalelujiaBossBot1(Bot):
         for v in visible_objects:
             if v.get_position() == self.get_position() + self.get_direction():
                 return Actions.Punch
-            elif v.get_position() == self.get_position() + 10:
+            if v.get_position() == self.get_position() + 3 and v.get_direction() == self.get_direction()-180:
                 return Actions.TurnAround
-            else:
-                return Actions.MoveForward
+            if v.get_position() == self.get_position()+3:
+                distance = v.get_direction() - self.get_direction()
 
-
+                return Actions.TurnAround
 
         if visible_objects:
-            return Actions.TurnLeft
+            return Actions.MoveForward
 
-        return Actions.TurnRight
+        return Actions.TurnLeft
+
+
 
 
 class SentryBot2(Bot):
