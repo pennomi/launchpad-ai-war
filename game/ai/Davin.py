@@ -17,12 +17,12 @@ class TrackerHalelujiaBossBot1(Bot):
         for v in visible_objects:
             if v.get_position() == self.get_position() + self.get_direction():
                 return Actions.Punch
-            if v.get_position() == self.get_position() + 3 and v.get_direction() == self.get_direction()-180:
-                return Actions.TurnAround
-            if v.get_position() == self.get_position()+3:
-                distance = v.get_direction() - self.get_direction()
 
-                return Actions.TurnAround
+            # if v.get_name() == "HunterBot":
+            #     distance = v.get_direction() - self.get_direction()
+
+
+                # return Actions.TurnAround
 
         if visible_objects:
             return Actions.MoveForward
