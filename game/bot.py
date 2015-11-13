@@ -25,9 +25,8 @@ class Actions(Enum):
     TurnAround = 6
 
     # Attacking
-    Punch = 7 # Unleash a powerful melee attack
-    Shoot = 8 # Fire a weak bullet forward
-
+    Punch = 7  # Unleash a powerful melee attack
+    Shoot = 8  # Fire a weak bullet forward
 
     # Lame Stuff
     DoNothing = 9
@@ -77,6 +76,7 @@ class Bot:
         self._name_label = self._model.attachNewNode(text)
         self._name_label.setBillboardPointEye()
         self._name_label.setPos(Vec3(0, 0, 6))
+        self._name_label.setScale(2, 2, 2)
 
         # Debug Field of View Cones
         # fov = make_fov()
