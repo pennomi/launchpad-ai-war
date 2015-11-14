@@ -35,7 +35,8 @@ class Davinator(Bot):
                 print(self.get_position() + self.get_direction())
                 print(v.get_position()+v.get_direction())
                 print("---------------------")
-                if self.ready == True:
+
+                if self.ready:
                         if self.x == len(self.WAIT)-1:
                             if self.x > 6:
                                 self.ready = False
@@ -46,45 +47,53 @@ class Davinator(Bot):
                             self.x += 1
                             return self.WAIT[self.x]
 
-                #  make the bot wait if approaching the same square as another bot. WORKING!
-                elif self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
-                    if self.get_position().x == v.get_position().x:
-                        # if not v.get_name() == "SpinBot":
-                        self.ready = True
-                        # else:
-                        #     return Actions.DoNothing
-                    else:
-                        if self.x < 2:
-                            self.x += 1
-                            return Actions.DoNothing
+                #  elif facing x
+                elif self.get_direction().x != 0:  # I'm facing in the x direction
+                    #  make the bot wait if approaching the same square as another bot. WORKING!
+                    if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
+                        if self.get_position().y == v.get_position().y:
+                            # if not v.get_name() == "SpinBot":
+                            self.ready = True
+                            # else:
+                            #     return Actions.DoNothing
                         else:
-                            self.x = -1
-                            return Actions.TurnLeft
-                # Make the bot go to the side if another bot is coming towards it NOT
-                elif self.get_position() + self.get_direction() == (v.get_position()+v.get_direction()+2):
-                    print("JamesTown")
-                    if self.get_position().x == v.get_position().x:
-                        print("CaldWell")
-                        # if not v.get_name() == "SpinBot":
-                        self.ready = True
-                        # else:
-                        #     return Actions.DoNothing
-                    else:
-                        if self.x < 2:
-                            self.x += 1
-                            return Actions.DoNothing
+                            if self.x < 1:
+                                self.x += 1
+                                return Actions.DoNothing
+                            else:
+                                self.x = -1
+                                return Actions.TurnLeft
+                    # check y to see if its lined up
+                            # if they are coming towards you get self.ready
+                            # else Track robots down and punch them
+                    # if not lined up get lined up
+
+                #  elif facing y
+                elif self.get_direction().y != 0:  # I'm facing in the y direction
+                    #  make the bot wait if approaching the same square as another bot. WORKING!
+                    if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
+                        if self.get_position().x == v.get_position().x:
+                            # if not v.get_name() == "SpinBot":
+                            self.ready = True
+                            # else:
+                            #     return Actions.DoNothing
                         else:
-                            self.x = -1
-                            return Actions.TurnLeft
-
-
-                # if someone on your line is coming towards you go to the side and wait for them to pass to punch them.
-                # Track down robots and punch them
+                            if self.x < 1:
+                                self.x += 1
+                                return Actions.DoNothing
+                            else:
+                                self.x = -1
+                                return Actions.TurnLeft
+                    # check x to see if lined up
+                        # if someone is coming towards you go to the side and wait for them to pass to punch them.
+                        # else Track down robots and punch them
+                    # if not lined up get lined up
 
         if visible_objects:
             return Actions.MoveForward
 
         return Actions.TurnLeft
+
 
 class TrackerHalelujiaBossBot1(Bot):
     wait = False

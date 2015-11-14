@@ -16,15 +16,15 @@ class LazyBot(Bot):
         return Actions.Punch
 
 
-class RandomBot(Bot):
-    """Do everything except Suicide."""
-    def update(self, tick_number, visible_objects):
-        return random.choice(list(Actions)[:+1])
+# class RandomBot(Bot):
+#     """Do everything except Suicide."""
+#     def update(self, tick_number, visible_objects):
+#         return random.choice(list(Actions)[:+1])
 
 class Thomas(Bot):
     """walk around and throw other bots in the air"""
 
-class Conrad(Bot):
-      def update(self, tick_number, visible_objects):
-        return random.choice(list(Actions) [:+1])
+# class Conrad(Bot):
+#       def update(self, tick_number, visible_objects):
+#         return random.choice(list(Actions) [:+1])
 
