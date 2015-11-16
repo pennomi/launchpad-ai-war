@@ -38,7 +38,7 @@ class Davinator(Bot):
 
                 if self.ready:
                         if self.x == len(self.WAIT)-1:
-                            if self.x > 6:
+                            if self.x > 3:
                                 self.ready = False
                                 self.x = -1
                             else:
@@ -57,7 +57,7 @@ class Davinator(Bot):
                             # else:
                             #     return Actions.DoNothing
                         else:
-                            if self.x < 1:
+                            if self.x < 0:
                                 self.x += 1
                                 return Actions.DoNothing
                             else:
@@ -78,7 +78,7 @@ class Davinator(Bot):
                             # else:
                             #     return Actions.DoNothing
                         else:
-                            if self.x < 1:
+                            if self.x < 0:
                                 self.x += 1
                                 return Actions.DoNothing
                             else:
