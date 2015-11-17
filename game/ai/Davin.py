@@ -11,7 +11,7 @@ def getEnemies(bot):
              return v
 
 
-class Davinator(Bot):
+class DavinGolem(Bot):
     WAIT = (Actions.TurnLeft, Actions.MoveForward, Actions.TurnAround)
     ready = False
     x = -1
@@ -45,14 +45,21 @@ class Davinator(Bot):
                                 return Actions.DoNothing
                         else:
                             self.x += 1
+                            print("++++++++++++++++++++++++++++++++++++++++++")
+                            print(self.x)
+                            print("++++++++++++++++++++++++++++++++++++++++++")
                             return self.WAIT[self.x]
 
                 #  elif facing x
                 elif self.get_direction().x != 0:  # I'm facing in the x direction
                     #  make the bot wait if approaching the same square as another bot. WORKING!
                     if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
+                        # if the robot is directly ahead, get o to the side and wait for him to pass
                         if self.get_position().y == v.get_position().y:
                             # if not v.get_name() == "SpinBot":
+                            print("********************")
+                            print("Facing X")
+                            print("********************")
                             self.ready = True
                             # else:
                             #     return Actions.DoNothing
@@ -74,6 +81,9 @@ class Davinator(Bot):
                     if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
                         if self.get_position().x == v.get_position().x:
                             # if not v.get_name() == "SpinBot":
+                            print("********************")
+                            print("Facing Y")
+                            print("********************")
                             self.ready = True
                             # else:
                             #     return Actions.DoNothing
@@ -94,49 +104,137 @@ class Davinator(Bot):
 
         return Actions.TurnLeft
 
+class Davinator(Bot):
+    WAIT = (Actions.TurnLeft, Actions.MoveForward, Actions.TurnAround)
+    ready = False
+    x = -1
 
-class TrackerHalelujiaBossBot1(Bot):
-    wait = False
-    turned = False
-    """Walk in a square and do nothing."""
     def update(self, tick_number, visible_objects):
-
         for v in visible_objects:
-            distance = (v.get_direction() - self.get_direction()).length()
-
+            # Punch anyone directly in front of you
             if v.get_position() == self.get_position() + self.get_direction():
+                print("HIYAH")
+                self.ready = False
+                self.x = -1
                 return Actions.Punch
 
-            # Check if he's facing me
-            if v.get_direction() == -self.get_direction() and distance < 3:
-                return Actions.TurnLeft
+            elif self.ready:
+                    if self.x >= len(self.WAIT)-1:
+                        if self.x > 2:
+                            self.ready = False
+                            self.x = -1
+                        else:
+                            self.x += 1
+                            return Actions.DoNothing
+                    else:
+                        self.x += 1
+                        print("++++++++++++++++++++++++++++++++++++++++++")
+                        print(self.x)
+                        print("++++++++++++++++++++++++++++++++++++++++++")
+                        return self.WAIT[self.x]
 
+            #  elif facing x
+            elif self.get_direction().x != 0:  # I'm facing in the x direction
+                #  make the bot wait if approaching the same square as another bot. WORKING!
+                if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
+                    # if the robot is directly ahead, get o to the side and wait for him to pass
+                    if self.get_position().y == v.get_position().y:
+                        # if not v.get_name() == "SpinBot":
+                        print("********************")
+                        print("Facing X")
+                        print("********************")
+                        self.ready = True
+                        self.x = -1
+                        # else:
+                        #     return Actions.DoNothing
+                    else:
+                        if self.x < 0:
+                            self.x += 1
+                            return Actions.DoNothing
+                        else:
+                            self.x = -1
+                            return Actions.TurnLeft
+                # check y to see if its lined up
+                        # if they are coming towards you get self.ready
+                        # else Track robots down and punch them
+                # if not lined up get lined up
 
-            # hunt
-            if self.get_direction().x != 0:  # I'm facing in the x direction
-                if v.get_position().y == self.get_position().y:
-                    # I'm lined up
-                    # wait and kill
-                    if v.get_direction == -self.get_direction():
-                        pass
-
-                else:
-                    pass  # TODO: Turn right or left, depending
-            else:  # I'm facing in the y direction
-                pass
-
-            # Target HunterBot
-            if v.get_name() == "HunterBot":
-                distance
-
-
-                # return Actions.TurnAround
+            #  elif facing y
+            elif self.get_direction().y != 0:  # I'm facing in the y direction
+                #  make the bot wait if approaching the same square as another bot. WORKING!
+                if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
+                    if self.get_position().x == v.get_position().x:
+                        # if not v.get_name() == "SpinBot":
+                        print("********************")
+                        print("Facing Y")
+                        print("********************")
+                        self.x = -1
+                        self.ready = True
+                        # else:
+                        #     return Actions.DoNothing
+                    else:
+                        if self.x < 0:
+                            self.x += 1
+                            return Actions.DoNothing
+                        else:
+                            self.x = -1
+                            return Actions.TurnLeft
+                # check x to see if lined up
+                    # if someone is coming towards you go to the side and wait for them to pass to punch them.
+                    # else Track down robots and punch them
+                # if not lined up get lined up
 
         if visible_objects:
+            print("super Califragilistic stupidcalidocious")
             return Actions.MoveForward
+        elif not self.ready:
+            return Actions.TurnLeft
+        else:
+            return Actions.DoNothing
 
-        return Actions.TurnLeft
 
+# class TrackerHalelujiaBossBot1(Bot):
+#     wait = False
+#     turned = False
+#     """Walk in a square and do nothing."""
+#     def update(self, tick_number, visible_objects):
+#
+#         for v in visible_objects:
+#             distance = (v.get_direction() - self.get_direction()).length()
+#
+#             if v.get_position() == self.get_position() + self.get_direction():
+#                 return Actions.Punch
+#
+#             # Check if he's facing me
+#             if v.get_direction() == -self.get_direction() and distance < 3:
+#                 return Actions.TurnLeft
+#
+#
+#             # hunt
+#             if self.get_direction().x != 0:  # I'm facing in the x direction
+#                 if v.get_position().y == self.get_position().y:
+#                     # I'm lined up
+#                     # wait and kill
+#                     if v.get_direction == -self.get_direction():
+#                         pass
+#
+#                 else:
+#                     pass  # TODO: Turn right or left, depending
+#             else:  # I'm facing in the y direction
+#                 pass
+#
+#             # Target HunterBot
+#             if v.get_name() == "HunterBot":
+#                 distance
+#
+#
+#                 # return Actions.TurnAround
+#
+#         if visible_objects:
+#             return Actions.MoveForward
+#
+#         return Actions.TurnLeft
+#
 
 # class HuntBot3(Bot):
 #     wait = False
@@ -206,24 +304,24 @@ class SentryBot2(Bot):
             return Actions.MoveForward
 
         return Actions.TurnAround
-
-
-class GimickBot(Bot):
-    MOVES = (Actions.TurnLeft, Actions.MoveBackward, Actions.TurnAround, Actions.Punch, Actions.MoveForward, Actions.TurnRight, Actions.MoveBackward, Actions.TurnLeft, Actions.TurnAround, Actions.Punch)
-    x = -1
-    """Ten successive moves"""
-    def update(self, tick_number, visible_objects):
-        for v in visible_objects:
-            if v.get_position() == self.get_position() + self.get_direction():
-                return Actions.Punch
-
-        if tick_number % 5:
-            self.x += 1
-            self.x %= len(self.MOVES) - 1
-
-            return self.MOVES[self.x]
-
-        return Actions.TurnLeft
+#
+#
+# class GimickBot(Bot):
+#     MOVES = (Actions.TurnLeft, Actions.MoveBackward, Actions.TurnAround, Actions.Punch, Actions.MoveForward, Actions.TurnRight, Actions.MoveBackward, Actions.TurnLeft, Actions.TurnAround, Actions.Punch)
+#     x = -1
+#     """Ten successive moves"""
+#     def update(self, tick_number, visible_objects):
+#         for v in visible_objects:
+#             if v.get_position() == self.get_position() + self.get_direction():
+#                 return Actions.Punch
+#
+#         if tick_number % 5:
+#             self.x += 1
+#             self.x %= len(self.MOVES) - 1
+#
+#             return self.MOVES[self.x]
+#
+#         return Actions.TurnLeft
 
 
 class SpinBot(Bot):
