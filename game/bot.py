@@ -88,13 +88,13 @@ class Bot:
     def get_position(self):
         """Return a rounded version of the position vector."""
         p = self._model.getPos()
-        return Vec3(round(p.x, 2), round(p.y, 2), round(p.z, 2))
+        return Vec3(round(p.x, 0), round(p.y, 0), round(p.z, 0))
 
     def get_direction(self):
         """Return a rounded version of the direction vector."""
         v = render.getRelativeVector(self._model, Vec3(0, 1, 0))
         v.normalize()
-        return Vec3(round(v.x, 2), round(v.y, 2), round(v.z, 2))
+        return Vec3(round(v.x, 0), round(v.y, 0), round(v.z, 0))
 
     def get_name(self):
         return self.__class__.__name__
@@ -127,11 +127,17 @@ class Bot:
             self.safe_loop('reverse-walk')
 
         elif self._orders == Actions.StrafeLeft:
-            new_pos += velocity
+            v = render.getRelativeVector(self._model, Vec3(-1, 0, 0))
+            v.normalize()
+            v = Vec3(round(v.x, 0), round(v.y, 0), round(v.z, 0))
+            new_pos += v
             self.safe_loop('walk')
 
         elif self._orders == Actions.StrafeRight:
-            new_pos += velocity
+            v = render.getRelativeVector(self._model, Vec3(1, 0, 0))
+            v.normalize()
+            v = Vec3(round(v.x, 0), round(v.y, 0), round(v.z, 0))
+            new_pos += v
             self.safe_loop('walk')
 
         elif self._orders == Actions.TurnLeft:
@@ -189,6 +195,8 @@ class Bot:
         self._hp -= amount
         if self._hp <= 0:
             # self._name_label.hide()
+            self._name_label.setTransparency(True)
+            self._name_label.setAlphaScale(0.25)
             if self._interval:
                 self._interval.pause()
             if not self._death_played:
