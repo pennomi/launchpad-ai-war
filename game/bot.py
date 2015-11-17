@@ -188,7 +188,7 @@ class Bot:
     def take_damage(self, amount):
         self._hp -= amount
         if self._hp <= 0:
-            self._name_label.hide()
+            # self._name_label.hide()
             if self._interval:
                 self._interval.pause()
             if not self._death_played:
