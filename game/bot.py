@@ -94,7 +94,7 @@ class Bot:
         """Return a rounded version of the direction vector."""
         v = render.getRelativeVector(self._model, Vec3(0, 1, 0))
         v.normalize()
-        return Vec3(round(v.x, 2), round(v.y, 2), round(v.z, 2))
+        return Vec3(round(v.x, 0), round(v.y, 0), round(v.z, 0))
 
     def get_name(self):
         return self.__class__.__name__
@@ -189,6 +189,8 @@ class Bot:
         self._hp -= amount
         if self._hp <= 0:
             # self._name_label.hide()
+            self._name_label.setTransparency(True)
+            self._name_label.setAlphaScale(0.25)
             if self._interval:
                 self._interval.pause()
             if not self._death_played:
