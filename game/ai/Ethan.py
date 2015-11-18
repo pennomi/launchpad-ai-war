@@ -14,10 +14,10 @@ class ScoobsterHailHydra(Bot):
             if v.get_position() == self.get_position() + self.get_direction():
                 return Actions.Punch
             if v.get_position() + v.get_direction() == self.get_position() + self.get_direction():
-                return random.choice([Actions.MoveBackward, Actions.StrafeRight])
+                return random.choice([Actions.MoveBackward, Actions.StrafeLeft, Actions.StrafeLeft])
 
         # Try to move towards the nearest golem
-        nearest_dist = 9999
+        nearest_dist = 99999999
         nearest_bot = None
         for v in visible_objects:
             distance = (v.get_position() - self.get_position()).length()
@@ -31,7 +31,7 @@ class ScoobsterHailHydra(Bot):
         else:
             nearest_pos = None
         if not nearest_pos:
-            return Actions.TurnLeft
+            return Actions.TurnRight
 
         x, y = nearest_pos.x, nearest_pos.y
 
