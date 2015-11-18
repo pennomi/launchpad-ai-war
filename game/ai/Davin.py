@@ -12,30 +12,31 @@ def getEnemies(bot):
 
 
 
-
 class Davinator(Bot):
-    WAIT = (Actions.TurnLeft, Actions.MoveForward, Actions.TurnAround)
-    ready = False
+    WAIT = (Actions.MoveForward, Actions.TurnAround)
+    in_danger = False
     DoneAlready = False
     x = -1
 
     def update(self, tick_number, visible_objects):
+
         for v in visible_objects:
             # Punch anyone directly in front of you
 
             if v.get_position() == self.get_position() + self.get_direction():
                 print("HIYAH")
-                self.ready = False
+                self.in_danger = False
 
                 self.x = -1
                 return Actions.Punch
 
-            elif self.ready:
+            # Move to the side and punch the robot when he passes
+            elif self.in_danger:
                     print("hahaYay")
                     if self.x >= len(self.WAIT)-1:
-                        if self.x > 2:
+                        if self.x > 1:
                             self.DoneAlready = True
-                            self.ready = False
+                            self.in_danger = False
                             self.x = -1
                         else:
                             print("Ready")
@@ -50,20 +51,21 @@ class Davinator(Bot):
                         return self.WAIT[self.x]
 
 
-            #  elif facing x
+            #  ELSE, IF I"M FACING IN THE X DIRECTION
             elif self.get_direction().x != 0:  # I'm facing in the x direction
-                #  make the bot wait if approaching the same square as another bot. WORKING!
+
+                #  Handle if approaching the same square as another bot
                 if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
-                    # if the robot is directly ahead, get o to the side and wait for him to pass
+
+                    # if the robot is directly ahead, tell the robot to get ready
                     if self.get_position().y == v.get_position().y:
-                        # if not v.get_name() == "SpinBot":
                         print("********************")
                         print("Facing X")
                         print("********************")
-                        self.ready = True
+                        self.in_danger = True
                         self.x = -1
-                        # else:
-                        #     return Actions.DoNothing
+
+                    #  if the robot is coming from the side, wait
                     else:
                         if self.x < 0:
                             self.x += 1
@@ -71,24 +73,28 @@ class Davinator(Bot):
                         else:
                             self.x = -1
                             return Actions.TurnLeft
-                # check y to see if its lined up
-                        # if they are coming towards you get self.ready
-                        # else Track robots down and punch them
-                # if not lined up get lined up
+                # HUNT
+                    # check y to see if its lined up
+                            # if they are coming towards you get self.ready
+                            # else Track robots down and punch them
+                    # if not lined up get lined up
 
-            #  elif facing y
+            # ELSE, IF I"M FACING IN THE Y DIRECTION
             elif self.get_direction().y != 0:  # I'm facing in the y direction
-                #  make the bot wait if approaching the same square as another bot. WORKING!
+
+                #  Handle if approaching the same square as another bot. WORKING!
                 if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
+
+                    #  If the robot is directly ahead, get ready
                     if self.get_position().x == v.get_position().x:
-                        # if not v.get_name() == "SpinBot":
                         print("********************")
                         print("Facing Y")
                         print("********************")
-                        self.ready = True
+                        self.in_danger = True
                         self.x = -1
-                        # else:
-                        #     return Actions.DoNothing
+                        return Actions.TurnLeft
+
+                    # if the robot is coming from the side, wait
                     else:
                         if self.x < 0:
                             self.x += 1
@@ -97,21 +103,56 @@ class Davinator(Bot):
                             self.x = -1
                             return Actions.TurnLeft
 
+                # HUNT
+                    # check x to see if lined up
+                        # if someone is coming towards you go to the side and wait for them to pass to punch them.
+                        # else Track down robots and punch them
+                    # if not lined up get lined up
 
-                # check x to see if lined up
-                    # if someone is coming towards you go to the side and wait for them to pass to punch them.
-                    # else Track down robots and punch them
-                # if not lined up get lined up
-        if not self.ready:
-            if visible_objects and not self.DoneAlready:
-                print("super Califragilistic stupidcalidocious")
-                return Actions.MoveForward
-            elif not self.ready:
-                self.DoneAlready = False
-                return Actions.TurnLeft
-            else:
-                self.DoneAlready = False
-                return Actions.DoNothing
+
+        #  If nothing is returned from the for loop,
+        if visible_objects and not self.DoneAlready:
+            print("super Califragilistic stupidcalidocious")
+            return Actions.MoveForward
+        elif not self.in_danger:
+            self.DoneAlready = False
+            return Actions.TurnLeft
+        else:
+            self.DoneAlready = False
+            return Actions.DoNothing
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
