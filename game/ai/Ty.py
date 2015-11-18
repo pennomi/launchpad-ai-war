@@ -16,7 +16,7 @@ class Bae(Bot):
             return Actions.TurnLeft
 
         if v.get_position() + v.get_direction() == self.get_position() + self.get_direction():
-            return Actions.DoNothing
+            return random.choice([Actions.StrafeLeft, Actions.StrafeRight])
 
         if visible_objects:
             return Actions.MoveForward
