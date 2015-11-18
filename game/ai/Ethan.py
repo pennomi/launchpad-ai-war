@@ -1,9 +1,10 @@
 import math
+import random
 
 from game.bot import Bot, Actions
 
 
-class ScoobyMaiBoi(Bot):
+class ScoobsterHailHydra(Bot):
     """Move toward enemies and punch them."""
     target = None
 
@@ -12,6 +13,8 @@ class ScoobyMaiBoi(Bot):
         for v in visible_objects:
             if v.get_position() == self.get_position() + self.get_direction():
                 return Actions.Punch
+            if v.get_position() + v.get_direction() == self.get_position() + self.get_direction():
+                return random.choice([Actions.MoveBackward, Actions.StrafeRight])
 
         # Try to move towards the nearest golem
         nearest_dist = 9999
@@ -50,7 +53,5 @@ class ScoobyMaiBoi(Bot):
                 return Actions.MoveForward
             else:
                 return Actions.TurnAround
-
-
 
         return Actions.TurnRight
