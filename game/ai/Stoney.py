@@ -23,6 +23,12 @@ class CheeseBot(Bot):
         else:
             return Actions.TurnLeft
 
+    def attackClosest(self):
+        p = self.closest.get_position()
+        d = self.closest.get_direction()
+        mep = self.get_position()
+        med = self.get_direction()
+        if mep - p < 2 and d == p - med:
+            return Actions.DoNothing
 
-
-
+        return Actions.Punch
