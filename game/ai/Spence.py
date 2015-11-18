@@ -1,30 +1,33 @@
 import random
 from game.bot import Bot, Actions
-
-
-class BoringBot(Bot):
-    """Walk in a square and do nothing."""
-    def update(self, tick_number, visible_objects):
-        print(visible_objects)
-        if tick_number % 3:
-            return Actions.MoveForward
-        return Actions.TurnLeft
-
-class LazyBot(Bot):
-    """Walk in a square and do nothing."""
-    def update(self, tick_number, visible_objects):
-        return Actions.Punch
-
-
-class RandomBot(Bot):
-    """Do everything except Suicide."""
-    def update(self, tick_number, visible_objects):
-        return random.choice(list(Actions)[:+1])
-
+def getEnemies(bot):
+      for v in bot.visible_objects:
+          if  not v in bot.team:
+              return v
 class Thomas(Bot):
-    """walk around and throw other bots in the air"""
+    def update(self, tick_number, visible_objects):
+        for v in visible_objects:
+             if v.get_position() == self.get_position() + self.get_direction():
+                 return Actions.Punch
+             elif v.get_position() == self.get_position() + 15:
+                 return Actions.TurnAround
+             else:
+                 return Actions.MoveForward
 
-class Conrad(Bot):
+
+        if visible_objects:
+            return Actions.TurnLeft
+        elif visible_objects:
+            return Actions.StrafeLeft
+
+        return Actions.TurnRight
+
+
+
+class SelfDestruct(Bot):
       def update(self, tick_number, visible_objects):
-        return random.choice(list(Actions) [:+1])
+         return Actions.MoveBackward
+
+      def update(self, tick_number, visible_objects):
+         return Actions.TurnAround
 

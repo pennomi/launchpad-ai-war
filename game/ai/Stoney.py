@@ -22,7 +22,7 @@ class CheeseBot(Bot):
                     self.closest = v;
         else:
             return Actions.TurnLeft
-        
+
 
 
 
