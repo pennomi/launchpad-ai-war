@@ -18,20 +18,18 @@ class ScoobsterHailHydra(Bot):
 
         # Try to move towards the nearest golem
         nearest_dist = 99999999
-        nearest_bot = None
         for v in visible_objects:
             distance = (v.get_position() - self.get_position()).length()
             if distance < nearest_dist and distance != 0:
-                nearest_bot = v
                 nearest_dist = distance
-                self.target = nearest_bot
+                self.target = v
 
         if self.target:
             nearest_pos = self.target.get_position()
         else:
             nearest_pos = None
         if not nearest_pos:
-            return Actions.TurnRight
+            return Actions.TurnLeft
 
         x, y = nearest_pos.x, nearest_pos.y
 

@@ -114,10 +114,16 @@ class Bot:
 
     def _execute_orders(self, tick_length, battle):
         # Pre-calculate some useful things
-        new_pos = self._model.getPos()
+        new_pos = self.get_position()
         new_dir = self._model.getHpr()
         velocity = self.get_direction()
 
+        # If we're outside of the arena, take damage
+        ARENA_SIZE = 13
+        if new_pos.length() > ARENA_SIZE:
+            self.take_damage(1)
+
+        # Execute the order
         if self._orders == Actions.MoveForward:
             new_pos += velocity
             self.safe_loop('walk')
