@@ -14,22 +14,58 @@ def getEnemies(bot):
 
 class DemonBot5(Bot):
     WAIT = (Actions.TurnRight, Actions.Punch)
-    Smart_bots = ("ScoobsterHailHydra", "Hayden", "Bob")
+    Tactic1 = (Actions.StrafeLeft, Actions.DoNothing, Actions.TurnRight)
+    Tactic2 = (Actions.MoveBackward, Actions.MoveForward)
+    Smart_bots = ("Hayden", "Bob")
+    annoying = ("ScoobsterHailHydra", "Hayden", "Thomas", "HunterBot")
+    prev_PositionX = 0
+    prev_PositionY = 0
+    distance = 0
     in_danger = False
     DoneAlready = False
 
     x = -1
+    def useTactic(self, Tactic):
+        for v in range(0, len(Tactic)-1):
+            print("Using tactic")
+
+            print("Getting Ready")
+            v += 1
+            print("++++++++++++++++++++++++++++++++++++++++++")
+            print(v)
+            print("++++++++++++++++++++++++++++++++++++++++++")
+            return Tactic[v]
+            # if self.x >= 1:
+            #     self.DoneAlready = True
+            #     self.in_danger = False
+            #     self.x = -1
+            #     return Actions.Punch
+            #
+            # else:
+            #     print("Getting Ready")
+            #     self.x += 1
+            #     print("++++++++++++++++++++++++++++++++++++++++++")
+            #     print(self.x)
+            #     print("++++++++++++++++++++++++++++++++++++++++++")
+            #     return Tactic[self.x]
+
 
     def update(self, tick_number, visible_objects):
         # self._hp += 600
         for v in visible_objects:
+            self.prev_PositionX = v.get_position().x
+            self.prev_PositionY = v.get_position().y
+            self.distance = (v.get_position() - self.get_position()).length()
             # Punch anyone directly in front of you
-            if v.team != self.team:
+            if v.team != self.team or v.get_name() in self.annoying:
                 if v.get_position() == self.get_position() + self.get_direction():
-                    print("HIYAH")
-                    self.in_danger = False
-                    self.x = -1
-                    return Actions.Punch
+                    if v.get_direction == -(self.get_direction()):
+                        return Actions.MoveBackward
+                    else:
+                        print("HIYAH")
+                        self.in_danger = False
+                        self.x = -1
+                        return Actions.Punch
 
 
                 # Move to the side and punch the robot when he passes
@@ -52,21 +88,22 @@ class DemonBot5(Bot):
                         #     print("++++++++++++++++++++++++++++++++++++++++++")
                         #     return Actions.TurnRight
 
-
-                        if self.x >= 1:
-                            self.DoneAlready = True
-                            self.in_danger = False
-                            self.x = -1
-                            return Actions.Punch
-
-                        else:
-                            print("Getting Ready")
-                            self.x += 1
-                            print("++++++++++++++++++++++++++++++++++++++++++")
-                            print(self.x)
-                            print("++++++++++++++++++++++++++++++++++++++++++")
-                            return self.WAIT[self.x]
-
+                        self.DoneAlready = True
+                        self.in_danger = False
+                        return Actions.TurnRight
+                        # if self.x >= 1:
+                        #     self.DoneAlready = True
+                        #     self.in_danger = False
+                        #     self.x = -1
+                        #     return Actions.Punch
+                        #
+                        # else:
+                        #     print("Getting Ready")
+                        #     self.x += 1
+                        #     print("++++++++++++++++++++++++++++++++++++++++++")
+                        #     print(self.x)
+                        #     print("++++++++++++++++++++++++++++++++++++++++++")
+                        #     return self.WAIT[self.x]
 
                 #  ELSE, IF I"M FACING IN THE X DIRECTION
                 elif self.get_direction().x != 0:  # I'm facing in the x direction
@@ -75,13 +112,16 @@ class DemonBot5(Bot):
                     if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
 
                         # if the robot is directly ahead, tell the robot to get ready
-                        if self.get_position().y == v.get_position().y:
-                            print("********************")
-                            print("Facing X")
-                            print("********************")
-                            self.in_danger = True
-                            self.x = -1
-                            return Actions.StrafeLeft
+                        if self.get_position().y == v.get_position().y and v.get_name() != "SpinBot":
+                            if v.get_name() == "ScoobsterHailHydra" and self.distance == 2:
+                                    self.useTactic(self.Tactic2)
+                            else:
+                                print("********************")
+                                print("Facing X")
+                                print("********************")
+                                self.in_danger = True
+                                self.x = -1
+                                return Actions.StrafeLeft
 
                         #  if the robot is coming from the side, wait
                         else:
@@ -103,7 +143,8 @@ class DemonBot5(Bot):
                                         return Actions.StrafeLeft
                                     else:
                                         return Actions.StrafeRight
-
+                            elif v.get_name() == "ScoobsterHailHydra" and self.distance == 2:
+                                self.useTactic(self.Tactic2)
                             else:
                                 self.x += 1
                                 if self.x > 2:
@@ -131,8 +172,11 @@ class DemonBot5(Bot):
                             #         return Actions.StrafeRight
                             #     else:
                             #         return Actions.StrafeLeft
-                    elif self.get_position() + self.get_direction() == v.get_position() + (v.get_direction()+1):
+                    elif self.get_position() + self.get_direction() == (v.get_position() + v.get_direction())+1:#v.get_direction:
                         return Actions.MoveBackward
+                    # # return something so that you don't get stuck doing nog
+                    # else:
+                    #     return Actions.MoveForward
 
                 # ELSE, IF I"M FACING IN THE Y DIRECTION
                 elif self.get_direction().y != 0:  # I'm facing in the y direction
@@ -141,7 +185,7 @@ class DemonBot5(Bot):
                     if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
 
                         #  If the robot is directly ahead, get ready
-                        if self.get_position().x == v.get_position().x:
+                        if self.get_position().x == v.get_position().x and v.get_name() != "SpinBot":
                             print("********************")
                             print("Facing Y")
                             print("********************")
@@ -154,10 +198,10 @@ class DemonBot5(Bot):
                             if v.get_name()in self.Smart_bots or v.get_name()[:-1] == "Thomas":
                                 self.x = -1
                                 print("Facing Y")
-                                print("enemy Position: "+ str(v.get_position()))
-                                print("enemy direction: "+str(v.get_direction()))
-                                print("self Position: "+str(self.get_position()))
-                                print("self direction: "+ str(self.get_direction()))
+                                print("enemy Position: " + str(v.get_position()))
+                                print("enemy direction: " + str(v.get_direction()))
+                                print("self Position: " + str(self.get_position()))
+                                print("self direction: " + str(self.get_direction()))
 
                                 if v.get_position().y < self.get_position().y:
                                     if v.get_position().x == self.get_position().x-1:
@@ -169,7 +213,8 @@ class DemonBot5(Bot):
                                         return Actions.StrafeLeft
                                     else:
                                         return Actions.StrafeRight
-
+                            elif v.get_name() == "ScoobsterHailHydra" and self.distance == 2:
+                                self.useTactic(self.Tactic2)
                             else:
                                 self.x += 1
                                 if self.x > 2:
@@ -198,7 +243,7 @@ class DemonBot5(Bot):
                             #     else:
                             #         return Actions.StrafeRight
 
-                    elif self.get_position() + self.get_direction() == v.get_position() + (v.get_direction()+1):
+                    elif self.get_position() + self.get_direction() == (v.get_position() + v.get_direction())+1:#v.get_direction:
                         return Actions.MoveBackward
                 else:
                     # Try to move towards the nearest golem
@@ -255,7 +300,7 @@ class DemonBot5(Bot):
 
                     #  Handle if approaching the same square as another bot
                     if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
-                        return Actions.TurnLeft
+                        return Actions.StrafeLeft
 
                 # ELSE, IF I"M FACING IN THE Y DIRECTION
                 elif self.get_direction().y != 0:  # I'm facing in the y direction
@@ -263,7 +308,7 @@ class DemonBot5(Bot):
                     #  Handle if approaching the same square as another bot. WORKING!
                     if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
 
-                        return Actions.TurnLeft
+                        return Actions.StrafeLeft
 
         #  If nothing is returned from the for loop, probably utilize memory here
         if visible_objects and not self.DoneAlready:
@@ -271,12 +316,16 @@ class DemonBot5(Bot):
             return Actions.MoveForward
         elif not self.in_danger:
             self.DoneAlready = False
+            # TODO use memory to know where to turn when you can't see the robot any more
             return Actions.TurnLeft
         else:
 
             self.DoneAlready = False
             print("Doing nothing")
             return Actions.DoNothing
+
+
+
 
 class TrackerHalelujiaBossBot1(Bot):
     wait = False
