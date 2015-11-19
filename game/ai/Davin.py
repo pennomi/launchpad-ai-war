@@ -20,7 +20,7 @@ class Davinator(Bot):
     x = -1
 
     def update(self, tick_number, visible_objects):
-        self._hp += 600
+        # self._hp += 600
         for v in visible_objects:
             # Punch anyone directly in front of you
             if v.team != self.team:
