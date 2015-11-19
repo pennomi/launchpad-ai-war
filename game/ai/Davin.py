@@ -1,5 +1,6 @@
 import math
 from game.bot import Bot, Actions
+import random
 from panda3d.core import Vec3, NodePath
 
 __author__ = 'Davin'
@@ -11,9 +12,9 @@ def getEnemies(bot):
              return v
 
 
-class Davinator(Bot):
+class DemonBot5(Bot):
     WAIT = (Actions.TurnRight, Actions.Punch)
-    Smart_bots = ("ScoobsterHailHydra", "Haydenbot")
+    Smart_bots = ("ScoobsterHailHydra", "Hayden", "Bob")
     in_danger = False
     DoneAlready = False
 
@@ -107,7 +108,17 @@ class Davinator(Bot):
                                 self.x += 1
                                 if self.x > 2:
                                     self.x = -1
-                                    return Actions.TurnLeft
+                                    if v.get_position().x > self.get_position().x:
+                                        if v.get_position().y == self.get_position().y-1:
+                                            return Actions.StrafeRight
+                                        else:
+                                            return Actions.StrafeLeft
+                                    else:
+                                        if v.get_position().y == self.get_position().y-1:
+                                            return Actions.StrafeLeft
+                                        else:
+                                            return Actions.StrafeRight
+                                    # return Actions.TurnLeft
                                 else:
                                     return Actions.DoNothing
                             # if self.x < 0:
@@ -163,7 +174,17 @@ class Davinator(Bot):
                                 self.x += 1
                                 if self.x > 2:
                                     self.x = -1
-                                    return Actions.TurnLeft
+                                    if v.get_position().y < self.get_position().y:
+                                        if v.get_position().x == self.get_position().x-1:
+                                            return Actions.StrafeRight
+                                        else:
+                                            return Actions.StrafeLeft
+                                    else:
+                                        if v.get_position().x == self.get_position().x-1:
+                                            return Actions.StrafeLeft
+                                        else:
+                                            return Actions.StrafeRight
+                                    # return Actions.TurnLeft
                                 else:
                                     return Actions.DoNothing
                             # if self.x < 0:
@@ -247,7 +268,6 @@ class Davinator(Bot):
         #  If nothing is returned from the for loop, probably utilize memory here
         if visible_objects and not self.DoneAlready:
             print("super Califragilistic stupidcalidocious")
-
             return Actions.MoveForward
         elif not self.in_danger:
             self.DoneAlready = False
@@ -369,7 +389,7 @@ class SentryBot2(Bot):
         for v in visible_objects:
             if v.get_position() == self.get_position() + self.get_direction():
 
-                if v.team != self.team and v.get_name() != "Davinator":
+                if v.team != self.team and v.get_name() != "DemonBot5":
                     return Actions.Punch
                 else:
                     return Actions.TurnLeft
@@ -387,7 +407,7 @@ class GimickBot(Bot):
     def update(self, tick_number, visible_objects):
         for v in visible_objects:
             if v.get_position() == self.get_position() + self.get_direction():
-                if v.team != self.team and v.get_name() != "Davinator":
+                if v.team != self.team and v.get_name() != "DemonBot5":
                     return Actions.Punch
                 else:
                     return Actions.TurnLeft
@@ -406,7 +426,7 @@ class SpinBot(Bot):
     def update(self, tick_number, visible_objects):
         for v in visible_objects:
             if v.get_position() == self.get_position() + self.get_direction():
-                if v.team != self.team and v.get_name() != "Davinator":
+                if v.team != self.team and v.get_name() != "DemonBot5":
                     return Actions.Punch
                 else:
                     return Actions.TurnLeft
