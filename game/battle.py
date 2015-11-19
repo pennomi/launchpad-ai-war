@@ -31,13 +31,16 @@ class BattleArena:
         self.projectiles = []
 
         # Load the bots dynamically
-        bot_classes = self.get_classes()
+        bot_classes = list(self.get_classes())
         print("Loading bots:", [c.__name__ for c in bot_classes])
-        for cls in bot_classes:
+        random.shuffle(bot_classes)
+        for i, cls in enumerate(bot_classes):
             self.bots.append(cls(
-                random.choice([Teams.Blue, Teams.Red, Teams.Green]),
-                Vec3(random.randint(-6, 6), random.randint(-6, 6), 0),
-                random.choice([0, 90, 180, 360])
+                Teams.Blue if i % 2 else Teams.Red,
+                Vec3(-6 + i + random.randint(0, 1),
+                     -6 if i % 2 else 6 + random.randint(-1, 1),
+                     0),
+                0 if i % 2 else 180
             ))
 
     def update(self, dt):
