@@ -419,74 +419,74 @@ class SpinBot(Bot):
 
 
 
-class Thomas2(Bot):
-    """walk around and throw other bots in the air"""
-
-class Thomas3(Bot):
-    """walk around and throw other bots in the air"""
-
-class Thomas4(Bot):
-    """walk around and throw other bots in the air"""
-
-class Thomas5(Bot):
-    """walk around and throw other bots in the air"""
-
-class Thomas6(Bot):
-    """walk around and throw other bots in the air"""
-
-class Thomas7(Bot):
-    """walk around and throw other bots in the air"""
-
-class Thomas8(Bot):
-    """walk around and throw other bots in the air"""
-
-class Thomas9(Bot):
-    """walk around and throw other bots in the air"""
-
-class ThomasA(Bot):
-    """walk around and throw other bots in the air"""
-
-class ThomasB(Bot):
-    """walk around and throw other bots in the air"""
-
-class ThomasC(Bot):
-    """walk around and throw other bots in the air"""
-
-class ThomasD(Bot):
-    """walk around and throw other bots in the air"""
-
-class ThomasE(Bot):
-    """walk around and throw other bots in the air"""
-
-class ThomasF(Bot):
-    """walk around and throw other bots in the air"""
-
-class ThomasG(Bot):
-    """walk around and throw other bots in the air"""
-
-class ThomasH(Bot):
-    """walk around and throw other bots in the air"""
-
-class ThomasI(Bot):
-    """walk around and throw other bots in the air"""
-
-class ThomasJ(Bot):
-    """walk around and throw other bots in the air"""
-
-class ThomasK(Bot):
-    """walk around and throw other bots in the air"""
-
-class ThomasL(Bot):
-    """walk around and throw other bots in the air"""
-
-class ThomasM(Bot):
-    """walk around and throw other bots in the air"""
-
-class ThomasN(Bot):
-    """walk around and throw other bots in the air"""
-
-class ThomasO(Bot):
-    """walk around and throw other bots in the air"""
-
-class ThomasP(Bot):
-    """walk around and throw other bots in the air"""
+# class Thomas2(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class Thomas3(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class Thomas4(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class Thomas5(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class Thomas6(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class Thomas7(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class Thomas8(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class Thomas9(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class ThomasA(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class ThomasB(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class ThomasC(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class ThomasD(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class ThomasE(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class ThomasF(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class ThomasG(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class ThomasH(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class ThomasI(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class ThomasJ(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class ThomasK(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class ThomasL(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class ThomasM(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class ThomasN(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class ThomasO(Bot):
+#     """walk around and throw other bots in the air"""
+#
+# class ThomasP(Bot):
+#     """walk around and throw other bots in the air"""
