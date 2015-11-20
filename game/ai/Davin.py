@@ -16,6 +16,7 @@ class DemonBot5(Bot):
     WAIT = (Actions.TurnRight, Actions.Punch)
     Tactic1 = (Actions.StrafeLeft, Actions.DoNothing, Actions.TurnRight)
     Tactic2 = (Actions.MoveBackward, Actions.MoveForward)
+    Tactic3 = (Actions.StrafeLeft, Actions.DoNothing, Actions.TurnRight)
     Smart_bots = ("Hayden", "Bob")
     # annoying = ("ScoobsterHailHydra", "Hayden", "Thomas", "HunterBot")
     prev_PositionX = 0
@@ -25,15 +26,17 @@ class DemonBot5(Bot):
     DoneAlready = False
 
     x = -1
+
     def useTactic(self, Tactic):
-        for v in range(0, len(Tactic)-1):
-            # print("Using tactic")
-            #
-            # print("Getting Ready")
-            v += 1
-            return Tactic[v]
-
-
+        # x = -1
+        return Tactic[1]
+        # for v in range(0, len(Tactic)-1):
+        #     v += 1
+        #     return Tactic[v]
+        #     # print("Using tactic")
+        #     #
+        #     # print("Getting Ready")
+        #     # v += 1
 
     def update(self, tick_number, visible_objects):
         # self._hp += 600
@@ -139,8 +142,9 @@ class DemonBot5(Bot):
                             #     else:
                             #         return Actions.StrafeLeft
                     # Look for bots two spaces ahead
-                    elif self.get_position() + self.get_direction() == (v.get_position() + v.get_direction())+1:#v.get_direction:
-                        return Actions.MoveBackward
+                    elif self.get_position().x + 3 == v.get_position().x and self.get_position().y == v.get_position().y and v.get_direction() == -(self.get_direction()):
+                        self.useTactic(self.Tactic2)
+                        return Actions.StrafeLeft
                     # # return something so that you don't get stuck doing nog
                     # else:
                     #     return Actions.MoveForward
@@ -209,8 +213,9 @@ class DemonBot5(Bot):
                             #     else:
                             #         return Actions.StrafeRight
 
-                    elif self.get_position() + self.get_direction() == v.get_position().x+2:#(v.get_position() + v.get_direction())+1:#v.get_direction:
-                        return Actions.MoveBackward
+                    elif self.get_position().y + 3 == v.get_position().y and self.get_position().x == v.get_position().x and v.get_direction() == -(self.get_direction()):
+                        self.useTactic(self.Tactic2)
+                        return Actions.StrafeLeft
                 # else:
                 #     # Try to move towards the nearest golem
                 #     nearest_dist = 9999
