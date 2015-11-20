@@ -182,11 +182,14 @@ class Bot:
         self._interval.start()
 
     def safe_loop(self, animation):
-        if self._actor.getCurrentAnim() != animation and self._hp > 0:
+        if self._death_played:
+            return
+        if self._actor.getCurrentAnim() != animation:
             self._actor.loop(animation)
 
     def punch(self, battle):
-        self._actor.play('punch')
+        if not self._death_played:
+            self._actor.play('punch')
         hazard = self.get_direction() + self.get_position()
         bot = battle.get_object_at_position(hazard)
         if isinstance(bot, Bot):
