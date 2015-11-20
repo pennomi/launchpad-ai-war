@@ -3,7 +3,7 @@ import os
 import random
 
 from direct.gui.OnscreenText import OnscreenText
-from panda3d.core import Point3, Vec3, TextNode, Vec2
+from panda3d.core import Point3, Vec3, TextNode
 from game.util import furthest_points
 from game.bot import Bot, Teams
 
