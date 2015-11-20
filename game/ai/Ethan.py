@@ -36,7 +36,6 @@ class ScoobsterHailHydra(Bot):
         x, y = nearest_pos.x, nearest_pos.y
 
         my_x, my_y = self.get_position().x, self.get_position().y
-        print(x, y, my_x, my_y)
 
         dir_x = self.get_direction().x
         dir_y = self.get_direction().y
