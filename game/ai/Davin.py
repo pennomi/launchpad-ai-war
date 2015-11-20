@@ -16,7 +16,7 @@ class DemonBot5(Bot):
     WAIT = (Actions.TurnRight, Actions.Punch)
     Tactic1 = (Actions.StrafeLeft, Actions.DoNothing, Actions.TurnRight)
     Tactic2 = (Actions.MoveBackward, Actions.MoveForward)
-    Tactic3 = (Actions.StrafeLeft, Actions.DoNothing, Actions.TurnRight)
+    Tactic3 = (Actions.TurnLeft, Actions.MoveForward, Actions.TurnAround)
     Smart_bots = ("Hayden", "Bob")
     # annoying = ("ScoobsterHailHydra", "Hayden", "Thomas", "HunterBot")
     prev_PositionX = 0
@@ -24,15 +24,17 @@ class DemonBot5(Bot):
     distance = 0
     in_danger = False
     DoneAlready = False
-
+    j = -1
     x = -1
 
-    def useTactic(self, Tactic):
+    def use_tactic(self, Tactic):
         # x = -1
-        return Tactic[1]
-        # for v in range(0, len(Tactic)-1):
-        #     v += 1
-        #     return Tactic[v]
+        # return Tactic[1]
+        for v in range(0, len(Tactic)-1):
+            print("blah")
+            print(Tactic[v])
+            self.j+=1
+            return Tactic[self.j]
         #     # print("Using tactic")
         #     #
         #     # print("Getting Ready")
@@ -82,8 +84,8 @@ class DemonBot5(Bot):
 
                         # if the robot is directly ahead, tell the robot to get ready
                         if self.get_position().y == v.get_position().y and v.get_name() != "SpinBot":
-                            if v.get_name() == "ScoobsterHailHydra" and self.distance == 2:
-                                    self.useTactic(self.Tactic2)
+                            if v.get_name() == "ScoobYaUp" and self.distance == 2:
+                                    self.use_tactic(self.Tactic2)
                             else:
                                 # print("********************")
                                 # print("Facing X")
@@ -112,8 +114,8 @@ class DemonBot5(Bot):
                                         return Actions.StrafeLeft
                                     else:
                                         return Actions.StrafeRight
-                            elif v.get_name() == "ScoobsterHailHydra" and self.distance == 2:
-                                self.useTactic(self.Tactic2)
+                            elif v.get_name() == "ScoobYaUp" and self.distance == 2:
+                                self.use_tactic(self.Tactic2)
                             else:
                                 self.x += 1
                                 if self.x > 2:
@@ -143,8 +145,9 @@ class DemonBot5(Bot):
                             #         return Actions.StrafeLeft
                     # Look for bots two spaces ahead
                     elif self.get_position().x + 3 == v.get_position().x and self.get_position().y == v.get_position().y and v.get_direction() == -(self.get_direction()):
-                        self.useTactic(self.Tactic2)
-                        return Actions.StrafeLeft
+                        self.use_tactic(self.Tactic1)
+                        print("funny")
+                        # return Actions.StrafeLeft
                     # # return something so that you don't get stuck doing nog
                     # else:
                     #     return Actions.MoveForward
@@ -183,8 +186,8 @@ class DemonBot5(Bot):
                                         return Actions.StrafeLeft
                                     else:
                                         return Actions.StrafeRight
-                            elif v.get_name() == "ScoobsterHailHydra" and self.distance == 2:
-                                self.useTactic(self.Tactic2)
+                            elif v.get_name() == "ScoobYaUp" and self.distance == 2:
+                                self.use_tactic(self.Tactic2)
                             else:
                                 self.x += 1
                                 if self.x > 2:
@@ -214,8 +217,9 @@ class DemonBot5(Bot):
                             #         return Actions.StrafeRight
 
                     elif self.get_position().y + 3 == v.get_position().y and self.get_position().x == v.get_position().x and v.get_direction() == -(self.get_direction()):
-                        self.useTactic(self.Tactic2)
-                        return Actions.StrafeLeft
+                        self.use_tactic(self.Tactic1)
+                        print("not funhy")
+                        # return Actions.StrafeLeft
                 # else:
                 #     # Try to move towards the nearest golem
                 #     nearest_dist = 9999
@@ -271,7 +275,7 @@ class DemonBot5(Bot):
 
                     #  Handle if approaching the same square as another bot
                     if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
-                        return Actions.StrafeLeft
+                        return Actions.TurnLeft
 
                 # ELSE, IF I"M FACING IN THE Y DIRECTION
                 elif self.get_direction().y != 0:  # I'm facing in the y direction
@@ -279,7 +283,7 @@ class DemonBot5(Bot):
                     #  Handle if approaching the same square as another bot. WORKING!
                     if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
 
-                        return Actions.StrafeLeft
+                        return Actions.TurnLeft
 
         #  If nothing is returned from the for loop, probably utilize memory here
         if visible_objects and not self.DoneAlready:
@@ -288,7 +292,7 @@ class DemonBot5(Bot):
         elif not self.in_danger:
             self.DoneAlready = False
             # TODO use memory to know where to turn when you can't see the robot any more
-            return Actions.TurnLeft
+            return random.choice([Actions.TurnLeft, Actions.TurnLeft, Actions.TurnLeft, Actions.TurnLeft, Actions.StrafeLeft])
         else:
 
             self.DoneAlready = False
@@ -298,126 +302,126 @@ class DemonBot5(Bot):
 
 
 
-class TrackerHalelujiaBossBot1(Bot):
-    wait = False
-    turned = False
-    """Walk in a square and do nothing."""
-    def update(self, tick_number, visible_objects):
-
-        for v in visible_objects:
-            distance = (v.get_direction() - self.get_direction()).length()
-
-            if v.get_position() == self.get_position() + self.get_direction():
-                if v.team != self.team:
-                    return Actions.Punch
-                else:
-                    return Actions.TurnLeft
-
-            # Check if he's facing me
-            if v.get_direction() == -self.get_direction() and distance < 3:
-                return Actions.TurnLeft
-
-
-            # hunt
-            if self.get_direction().x != 0:  # I'm facing in the x direction
-                if v.get_position().y == self.get_position().y:
-                    # I'm lined up
-                    # wait and kill
-                    if v.get_direction == -self.get_direction():
-                        pass
-
-                else:
-                    pass  # TODO: Turn right or left, depending
-            else:  # I'm facing in the y direction
-                pass
-
-            # Target HunterBot
-            if v.get_name() == "HunterBot":
-                distance
-
-
-                # return Actions.TurnAround
-
-        if visible_objects:
-            return Actions.MoveForward
-
-        return Actions.TurnLeft
-
-
-class HuntBot3(Bot):
-    wait = False
-    turned = False
-    ready = False
-    """Ten successive moves"""
-    def update(self, tick_number, visible_objects):
-        for v in visible_objects:
-            if v.get_position() == self.get_position() + self.get_direction():
-                self.wait = False
-                self.turned = False
-                self.ready = False
-                if v.team != self.team:
-                    return Actions.Punch
-                else:
-                    return Actions.TurnLeft
-
-            else:
-
-                # hunt
-                if self.get_direction().x != 0:  # I'm facing in the x direction
-                    if v.get_position().y == self.get_position().y:
-
-                        # I'm lined up
-                        # wait and kill
-                        if v.get_direction == self.get_direction()-180:
-                            self.turned = True
-                            return Actions.TurnLeft
-                        elif self.turned == True:
-                            self.ready = True
-                            return Actions.TurnAround
-                        elif self.ready == True:
-                            return Actions.DoNothing
-                    # elif v.get_position().y == self.get_position().y+3:
-
-                elif self.get_direction().y != 0:  # I'm facing in the x direction
-                    if v.get_position().x == self.get_position().x:
-
-                        # I'm lined up
-                        # wait and kill
-                        if v.get_direction == self.get_direction()-180:
-                            self.turned = True
-                            return Actions.TurnLeft
-                        elif self.turned == True and tick_number % 2:
-                            self.ready = True
-                            self.turned = False
-                            return Actions.Punch
-                        elif self.ready == True:
-                            return Actions.DoNothing
+# class TrackerHalelujiaBossBot1(Bot):
+#     wait = False
+#     turned = False
+#     """Walk in a square and do nothing."""
+#     def update(self, tick_number, visible_objects):
+#
+#         for v in visible_objects:
+#             distance = (v.get_direction() - self.get_direction()).length()
+#
+#             if v.get_position() == self.get_position() + self.get_direction():
+#                 if v.team != self.team:
+#                     return Actions.Punch
+#                 else:
+#                     return Actions.TurnLeft
+#
+#             # Check if he's facing me
+#             if v.get_direction() == -self.get_direction() and distance < 3:
+#                 return Actions.TurnLeft
+#
+#
+#             # hunt
+#             if self.get_direction().x != 0:  # I'm facing in the x direction
+#                 if v.get_position().y == self.get_position().y:
+#                     # I'm lined up
+#                     # wait and kill
+#                     if v.get_direction == -self.get_direction():
+#                         pass
+#
+#                 else:
+#                     pass  # TODO: Turn right or left, depending
+#             else:  # I'm facing in the y direction
+#                 pass
+#
+#             # Target HunterBot
+#             if v.get_name() == "HunterBot":
+#                 distance
+#
+#
+#                 # return Actions.TurnAround
+#
+#         if visible_objects:
+#             return Actions.MoveForward
+#
+#         return Actions.TurnLeft
 
 
-        if visible_objects:
+# class HuntBot3(Bot):
+#     wait = False
+#     turned = False
+#     ready = False
+#     """Ten successive moves"""
+#     def update(self, tick_number, visible_objects):
+#         for v in visible_objects:
+#             if v.get_position() == self.get_position() + self.get_direction():
+#                 self.wait = False
+#                 self.turned = False
+#                 self.ready = False
+#                 if v.team != self.team:
+#                     return Actions.Punch
+#                 else:
+#                     return Actions.TurnLeft
+#
+#             else:
+#
+#                 # hunt
+#                 if self.get_direction().x != 0:  # I'm facing in the x direction
+#                     if v.get_position().y == self.get_position().y:
+#
+#                         # I'm lined up
+#                         # wait and kill
+#                         if v.get_direction == self.get_direction()-180:
+#                             self.turned = True
+#                             return Actions.TurnLeft
+#                         elif self.turned == True:
+#                             self.ready = True
+#                             return Actions.TurnAround
+#                         elif self.ready == True:
+#                             return Actions.DoNothing
+#                     # elif v.get_position().y == self.get_position().y+3:
+#
+#                 elif self.get_direction().y != 0:  # I'm facing in the x direction
+#                     if v.get_position().x == self.get_position().x:
+#
+#                         # I'm lined up
+#                         # wait and kill
+#                         if v.get_direction == self.get_direction()-180:
+#                             self.turned = True
+#                             return Actions.TurnLeft
+#                         elif self.turned == True and tick_number % 2:
+#                             self.ready = True
+#                             self.turned = False
+#                             return Actions.Punch
+#                         elif self.ready == True:
+#                             return Actions.DoNothing
+#
+#
+#         if visible_objects:
+#
+#             return Actions.MoveForward
+#         elif tick_number % 4:
+#             return Actions.TurnLeft
+#         else:
+#             return Actions.DoNothing
+#
 
-            return Actions.MoveForward
-        elif tick_number % 4:
-            return Actions.TurnLeft
-        else:
-            return Actions.DoNothing
-
-
-class SentryBot2(Bot):
-    """pace back and forth and kill anything found."""
-    def update(self, tick_number, visible_objects):
-        for v in visible_objects:
-            if v.get_position() == self.get_position() + self.get_direction():
-
-                if v.team != self.team and v.get_name() != "DemonBot5":
-                    return Actions.Punch
-                else:
-                    return Actions.TurnLeft
-
-        if tick_number % 6:
-            return Actions.MoveForward
-
-        return Actions.TurnAround
+# class SentryBot2(Bot):
+#     """pace back and forth and kill anything found."""
+#     def update(self, tick_number, visible_objects):
+#         for v in visible_objects:
+#             if v.get_position() == self.get_position() + self.get_direction():
+#
+#                 if v.team != self.team and v.get_name() != "DemonBot5":
+#                     return Actions.Punch
+#                 else:
+#                     return Actions.TurnLeft
+#
+#         if tick_number % 6:
+#             return Actions.MoveForward
+#
+#         return Actions.TurnAround
 
 
 class GimickBot(Bot):
@@ -441,18 +445,18 @@ class GimickBot(Bot):
         return Actions.TurnLeft
 
 
-class SpinBot(Bot):
-
-    def update(self, tick_number, visible_objects):
-        for v in visible_objects:
-            if v.get_position() == self.get_position() + self.get_direction():
-                if v.team != self.team and v.get_name() != "DemonBot5":
-                    return Actions.Punch
-                else:
-                    return Actions.TurnLeft
-
-
-        return Actions.TurnLeft
+# class SpinBot(Bot):
+#
+#     def update(self, tick_number, visible_objects):
+#         for v in visible_objects:
+#             if v.get_position() == self.get_position() + self.get_direction():
+#                 if v.team != self.team and v.get_name() != "DemonBot5":
+#                     return Actions.Punch
+#                 else:
+#                     return Actions.TurnLeft
+#
+#
+#         return Actions.TurnLeft
 
 
 
