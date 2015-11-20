@@ -8,16 +8,18 @@ class ScoobsterHailHydra(Bot):
     """Move toward enemies and punch them."""
     target = None
 
+
     def update(self, tick_number, visible_objects):
         # Check if something needs killed
         for v in visible_objects:
-            if v.get_position() == self.get_position() + self.get_direction():
+
+            if v.get_position() == self.get_position() + self.get_direction() and v.team != self.team:
                 return Actions.Punch
             if v.get_position() + v.get_direction() == self.get_position() + self.get_direction():
-                return random.choice([Actions.MoveBackward, Actions.StrafeLeft, Actions.StrafeLeft])
+                return random.choice([Actions.MoveBackward, Actions.MoveBackward, Actions.StrafeLeft])
 
         # Try to move towards the nearest golem
-        nearest_dist = 99999999
+        nearest_dist = 999999
         for v in visible_objects:
             distance = (v.get_position() - self.get_position()).length()
             if distance < nearest_dist and distance != 0:
@@ -45,10 +47,10 @@ class ScoobsterHailHydra(Bot):
             if math.copysign(1, dx) == math.copysign(1, dir_x):
                 return Actions.MoveForward
             else:
-                return Actions.TurnAround
+                return Actions.StrafeRight
         if dy != 0 and dir_y != 0:
             if math.copysign(1, dy) == math.copysign(1, dir_y):
-                return Actions.MoveForward
+                return Actions.TurnRight
             else:
                 return Actions.TurnAround
 
