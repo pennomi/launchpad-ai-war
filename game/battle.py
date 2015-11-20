@@ -8,6 +8,9 @@ from game.util import furthest_points
 from game.bot import Bot, Teams, Actions
 
 
+RESET_TIMER = 2 * 60  # 2 minutes
+
+
 def make_label(m):
     return OnscreenText(
         text=m, pos=Vec3(-1.2, .25, 0), scale=0.05,
@@ -19,7 +22,7 @@ def make_label(m):
 # noinspection PyProtectedMember
 class BattleArena:
     radius = 10
-    tick_number = 0
+    tick = 0
     camera_pos = Vec3(10, 0, 30)
     camera_look = Vec3(0, 0, 0)
     first_blood = 0  # 0 for not triggered, 1 for triggering, 2 for played
@@ -29,6 +32,8 @@ class BattleArena:
         # Load the arena model
         self.model = loader.loadModel("models/Arena.egg")
         self.model.reparentTo(render)
+        self.reset_label = make_label("")
+        self.reset_label.setY(-0.9)
 
         # Prepare several death message text boxes
         self.death_messages = []
@@ -42,7 +47,7 @@ class BattleArena:
 
     def reset(self):
         self.first_blood = 0
-        self.tick_number = 0
+        self.tick = 0
 
         # Clean up messages
         for m in self.death_messages:
@@ -92,11 +97,11 @@ class BattleArena:
         """Once a second, have each bot send in its orders. Then have those
         bots animate their actions.
         """
-        self.tick_number += 1
+        self.tick += 1
         living_bots = [b for b in self.bots if b._hp > 0]
         # First get all orders (so later bots don't have more information)
         for b in living_bots:
-            b._get_orders(self.tick_number, self.get_visible_objects(b))
+            b._get_orders(self.tick, self.get_visible_objects(b))
         # Then move everyone (so we can dodge)
         for b in [b for b in living_bots if b._orders != Actions.Punch]:
             b._execute_orders(dt, self)
@@ -110,9 +115,16 @@ class BattleArena:
             self.first_blood = 2
 
         # if only one team is left, reset
-        t = self.bots[0].team
-        if all([b.team == t for b in self.bots]) or self.tick_number > 2 * 60:
+        try:
+            t = self.bots[0].team
+        except IndexError:
+            t = None
+        if all([b.team == t for b in living_bots]) or self.tick > RESET_TIMER:
             self.reset()
+
+        # update the reset timer
+        self.reset_label.setText(
+            "{} seconds left in match".format(RESET_TIMER - self.tick))
 
     def get_object_at_position(self, v):
         for b in self.bots:
