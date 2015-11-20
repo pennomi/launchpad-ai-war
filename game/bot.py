@@ -76,7 +76,7 @@ class Bot:
         self._name_label = self._model.attachNewNode(text)
         self._name_label.setBillboardPointEye()
         self._name_label.setPos(Vec3(0, 0, 6))
-        self._name_label.setScale(2, 2, 2)
+        self._name_label.setScale(3, 3, 3)
 
         # Debug Field of View Cones
         # fov = make_fov()
@@ -207,9 +207,9 @@ class Bot:
     def take_damage(self, amount):
         self._hp -= amount
         if self._hp <= 0:
-            # self._name_label.hide()
-            self._name_label.setTransparency(True)
-            self._name_label.setAlphaScale(0.25)
+            self._name_label.hide()
+            # self._name_label.setTransparency(True)
+            # self._name_label.setAlphaScale(0.25)
             if self._interval:
                 self._interval.pause()
             if not self._death_played:

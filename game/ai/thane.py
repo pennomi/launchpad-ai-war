@@ -11,7 +11,6 @@ class HunterBot(Bot):
                 else:
                     return Actions.TurnLeft
 
-
         if visible_objects:
             return Actions.MoveForward
 
