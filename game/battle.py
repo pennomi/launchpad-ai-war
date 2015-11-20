@@ -3,59 +3,75 @@ import os
 import random
 
 from direct.gui.OnscreenText import OnscreenText
-from panda3d.core import Point3, Vec3, TextNode, Vec2
+from panda3d.core import Point3, Vec3, TextNode
 from game.util import furthest_points
-from game.bot import Bot, Teams
+from game.bot import Bot, Teams, Actions
+
+
+RESET_TIMER = 2 * 60  # 2 minutes
 
 
 def make_label(m):
     return OnscreenText(
         text=m, pos=Vec3(-1.2, .25, 0), scale=0.05,
-        fg=(1.0, 1.0, 1.0, 1.0), align=TextNode.ALeft
+        fg=(1.0, 1.0, 1.0, 1.0), align=TextNode.ALeft,
+        shadow=(0, 0, 0, 1),
     )
 
 
 # noinspection PyProtectedMember
 class BattleArena:
     radius = 10
-    tick_number = 0
-    camera_pos = Vec3(0, 0, 0)
+    tick = 0
+    camera_pos = Vec3(10, 0, 30)
     camera_look = Vec3(0, 0, 0)
+    first_blood = 0  # 0 for not triggered, 1 for triggering, 2 for played
+    bots = []
 
     def __init__(self):
         # Load the arena model
         self.model = loader.loadModel("models/Arena.egg")
         self.model.reparentTo(render)
+        self.reset_label = make_label("")
+        self.reset_label.setY(-0.9)
 
         # Prepare several death message text boxes
         self.death_messages = []
-        self.announce("Welcome to the LAUNCHPAD BATTLE ARENA!")
-
-        # Initial camera state
-        camera.setPos(render, 10, 0, 30)
-        camera.lookAt(Point3(0, 0, 0))
-
-        # Set up the map (for later)
-        self.map = [[0 for _ in range(30)] for _ in range(30)]
-
-        # Set up variables
-        self.bots = []
-        self.projectiles = []
 
         # Load the bots dynamically
-        bot_classes = list(self.get_classes())
-        print("Loading bots:", [c.__name__ for c in bot_classes])
-        random.shuffle(bot_classes)
-        for i, cls in enumerate(bot_classes):
+        self.bot_classes = list(self.get_classes())
+        print("Loading bots:", [c.__name__ for c in self.bot_classes])
+
+        # Set up the battle
+        self.reset()
+
+    def reset(self):
+        self.first_blood = 0
+        self.tick = 0
+
+        # Clean up messages
+        for m in self.death_messages:
+            m.removeNode()
+        self.death_messages = []
+        self.announce("Welcome to the LAUNCHPAD BATTLE ARENA!",
+                      color=(0.2, 1, 0.2, 1))
+
+        # Spawn the bots
+        for b in self.bots:
+            b.delete()
+        self.bots = []
+        random.shuffle(self.bot_classes)
+        bots_offset = len(self.bot_classes) // 2
+        for i, cls in enumerate(self.bot_classes):
             self.bots.append(cls(
                 Teams.Blue if i % 2 else Teams.Red,
-                Vec3(-6 + i + random.randint(0, 1),
+                Vec3(-bots_offset + i + random.randint(0, 1),
                      -6 if i % 2 else 6 + random.randint(-1, 1),
                      0),
                 0 if i % 2 else 180
             ))
 
-    def announce(self, message, color=(1.0, 1.0, 1.0, 1.0)):
+    def announce(self, message, color=(1.0, 1.0, 1.0, 1.0), sfx=None):
         # Add the label
         l = make_label(message)
         l.setColorScale(color)
@@ -67,22 +83,50 @@ class BattleArena:
             offset = max(5 - d, 0)
             m.setY((d - i + offset) / 15. + .5)
 
+        if sfx:
+            if self.first_blood == 0:
+                self.first_blood = 1
+                sound = loader.loadSfx("sound/announcer/FirstBlood.wav")
+                sound.play()
+            # Don't play over the top of the first blood announcement
+            if self.first_blood == 2:
+                sound = loader.loadSfx("sound/announcer/{}.wav".format(sfx))
+                sound.play()
+
     def update(self, dt):
         """Once a second, have each bot send in its orders. Then have those
         bots animate their actions.
         """
-        self.tick_number += 1
+        self.tick += 1
+        living_bots = [b for b in self.bots if b._hp > 0]
         # First get all orders (so later bots don't have more information)
-        for b in self.bots:
-            b._get_orders(self.tick_number, self.get_visible_objects(b))
-        # Then move everyone (move order shouldn't have an advantage)
-        for b in self.bots:
+        for b in living_bots:
+            b._get_orders(self.tick, self.get_visible_objects(b))
+        # Then move everyone (so we can dodge)
+        for b in [b for b in living_bots if b._orders != Actions.Punch]:
             b._execute_orders(dt, self)
-        # Then update the bullets (this allows dodging, if you're smart)
-        for p in self.projectiles:
-            p.update(dt)
-        # Calculate any collisions between any combination of bots and bullets
+        # Punching comes last
+        for b in [b for b in living_bots if b._orders == Actions.Punch]:
+            b._execute_orders(dt, self)
+        # Calculate any collisions between any bots
         self.kill_overlapping_bots()
+        # Tell sfx that they're ok to play again
+        if self.first_blood == 1:
+            self.first_blood = 2
+
+        # Check reset parameters
+        if not living_bots:
+            self.reset()
+        else:
+            t = living_bots[0].team
+            if all([b.team == t for b in living_bots]):
+                self.reset()
+        if self.tick > RESET_TIMER:
+            self.reset()
+
+        # update the reset timer
+        self.reset_label.setText(
+            "{} seconds left in match".format(RESET_TIMER - self.tick))
 
     def get_object_at_position(self, v):
         for b in self.bots:
@@ -96,7 +140,10 @@ class BattleArena:
                 continue
             other = self.get_object_at_position(b.get_position())
             if other and b and other != b:
-                self.announce("{} and {} collided!".format(b.get_name(), other.get_name()))
+                self.announce(
+                    "{} and {} collided!".format(
+                        b.get_name(), other.get_name()),
+                    sfx="Carnage")
                 b.take_damage(999)
                 other.take_damage(999)
 

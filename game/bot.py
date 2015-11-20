@@ -7,9 +7,8 @@ from game.util import make_fov
 
 
 class Teams(tuple, Enum):
-    Blue = (0, 0, 1, 1)
-    Green = (0, 1, 0, 1)
-    Red = (1, 0, 0, 1)
+    Blue = (0.15, 0.15, 1, 1)
+    Red = (1, 0.1, 0.1, 1)
 
 
 class Actions(Enum):
@@ -25,21 +24,21 @@ class Actions(Enum):
     TurnAround = 6
 
     # Attacking
-    Punch = 7  # Unleash a powerful melee attack
-    Shoot = 8  # Fire a weak bullet forward
+    Punch = 7
 
     # Lame Stuff
-    DoNothing = 9
-    Suicide = 10
+    DoNothing = 8
+    Suicide = 9
 
 
-class Bot:
+class Bot(object):
 
     def __init__(self, team, position, direction):
         self._orders = Actions.DoNothing
         self._hp = 5
         self._death_played = False
         self._interval = None
+        self.kills = 0
 
         self.team = team
 
@@ -76,7 +75,7 @@ class Bot:
         self._name_label = self._model.attachNewNode(text)
         self._name_label.setBillboardPointEye()
         self._name_label.setPos(Vec3(0, 0, 6))
-        self._name_label.setScale(2, 2, 2)
+        self._name_label.setScale(3, 3, 3)
 
         # Debug Field of View Cones
         # fov = make_fov()
@@ -113,12 +112,9 @@ class Bot:
             self._orders = None
 
     def _execute_orders(self, tick_length, battle):
-        if self._hp <= 0:
-            return
-
         # Pre-calculate some useful things
         new_pos = self.get_position()
-        new_dir = self._model.getHpr()
+        new_dir = self._model.getHpr()  # TODO: Getting rounding errors here
         velocity = self.get_direction()
 
         # If we're outside of the arena, take damage
@@ -165,9 +161,6 @@ class Bot:
         elif self._orders == Actions.Punch:
             self.punch(battle)
 
-        elif self._orders == Actions.Shoot:
-            self.shoot(battle)
-
         elif self._orders == Actions.DoNothing:
             self.safe_loop('idle')
 
@@ -184,34 +177,59 @@ class Bot:
         # Animate the motion
         if self._hp <= 0:
             return
-        tick = tick_length - 0.05  # Shave off a tiny bit to finish the interval
-        self._interval = LerpPosHprInterval(self._model, tick, new_pos, new_dir)
+        self._interval = LerpPosHprInterval(
+            self._model, tick_length-0.05, new_pos, new_dir)
         self._interval.start()
 
     def safe_loop(self, animation):
-        if self._actor.getCurrentAnim() != animation and self._hp > 0:
+        if self._death_played:
+            return
+        if self._actor.getCurrentAnim() != animation:
             self._actor.loop(animation)
 
     def punch(self, battle):
-        self._actor.play('punch')
+        if not self._death_played:
+            self._actor.play('punch')
         hazard = self.get_direction() + self.get_position()
         bot = battle.get_object_at_position(hazard)
         if isinstance(bot, Bot):
-            battle.announce("{} just pwned {}".format(self.get_name(), bot.get_name()))
-            bot.take_damage(5)
-
-    def shoot(self, battle):
-        print("Shooting not implemented yet!")
-        self._actor.play('throw')
+            bot.take_damage(5)  # TODO: This is fun as 1
+            if bot._hp > 0:
+                return
+            if bot.team == self.team:
+                message = "{self} killed its teammate {target}!"
+                self.kills -= 1
+            else:
+                message = "{self} just pwned {target}!"
+                self.kills += 1
+            battle.announce(message.format(self=self.get_name(),
+                                           target=bot.get_name()),
+                            color=self.team,
+                            sfx="Ownage" if self.kills == 1 else None)
+            if self.kills == 2:
+                battle.announce("{} is ON FIRE!".format(self.get_name()),
+                                color=(1.0, 0.5, 0.0, 1.0), sfx="DoubleKill")
+            elif self.kills == 3:
+                battle.announce("{} is UNSTOPPABLE!".format(self.get_name()),
+                                color=(1.0, 0.5, 0.0, 1.0), sfx="TripleKill")
+            elif self.kills == 4:
+                battle.announce("{} is DOMINATING!".format(self.get_name()),
+                                color=(1.0, 0.5, 0.0, 1.0), sfx="Dominating")
+            elif self.kills > 4:
+                battle.announce("{} is GODLIKE!".format(self.get_name()),
+                                color=(1.0, 0.5, 0.0, 1.0), sfx="Godlike")
 
     def take_damage(self, amount):
         self._hp -= amount
         if self._hp <= 0:
-            # self._name_label.hide()
-            self._name_label.setTransparency(True)
-            self._name_label.setAlphaScale(0.25)
+            self._name_label.hide()
             if self._interval:
                 self._interval.pause()
             if not self._death_played:
                 self._actor.play('death')
                 self._death_played = True
+
+    def delete(self):
+        self._model.removeNode()
+        self._actor.cleanup()
+        self._name_label.removeNode()
