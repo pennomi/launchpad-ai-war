@@ -177,8 +177,8 @@ class Bot:
         # Animate the motion
         if self._hp <= 0:
             return
-        tick = tick_length - 0.05  # Shave off a tiny bit to finish the interval
-        self._interval = LerpPosHprInterval(self._model, tick, new_pos, new_dir)
+        self._interval = LerpPosHprInterval(
+            self._model, tick_length, new_pos, new_dir)
         self._interval.start()
 
     def safe_loop(self, animation):
