@@ -3,7 +3,7 @@ import random
 from game.bot import Bot, Actions
 
 
-class Bæ(Bot):
+class Bae(Bot):
     """Move toward enemies and punch them."""
 
     def update(self, tick_number, visible_objects):
@@ -27,7 +27,8 @@ class Bæ(Bot):
         else:
             return Actions.TurnLeft
 
-class SideBæ(Bot):
+
+class SideBae(Bot):
     """Move toward enemies and punch them."""
 
     def update(self, tick_number, visible_objects):
