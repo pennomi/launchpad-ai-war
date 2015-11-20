@@ -208,7 +208,8 @@ class Bot:
                 self.kills += 1
             battle.announce(message.format(self=self.get_name(),
                                            target=bot.get_name()),
-                            color=self.team)
+                            color=self.team,
+                            sfx="Ownage" if self.kills == 1 else None)
             if self.kills == 2:
                 battle.announce("{} is ON FIRE!".format(self.get_name()),
                                 color=(1.0, 0.5, 0.0, 1.0), sfx="DoubleKill")
