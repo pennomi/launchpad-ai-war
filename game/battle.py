@@ -5,7 +5,7 @@ import random
 from direct.gui.OnscreenText import OnscreenText
 from panda3d.core import Point3, Vec3, TextNode
 from game.util import furthest_points
-from game.bot import Bot, Teams
+from game.bot import Bot, Teams, Actions
 
 
 def make_label(m):
@@ -22,6 +22,7 @@ class BattleArena:
     tick_number = 0
     camera_pos = Vec3(0, 0, 0)
     camera_look = Vec3(0, 0, 0)
+    first_blood = 0  # 0 for not triggered, 1 for triggering, 2 for played
 
     def __init__(self):
         # Load the arena model
@@ -70,25 +71,37 @@ class BattleArena:
             m.setY((d - i + offset) / 15. + .5)
 
         if sfx:
-            sound = loader.loadSfx("sound/announcer/{}.wav".format(sfx))
-            sound.play()
+            if self.first_blood == 0:
+                self.first_blood = 1
+                sound = loader.loadSfx("sound/announcer/FirstBlood.wav")
+                sound.play()
+            # Don't play over the top of the first blood announcement
+            if self.first_blood == 2:
+                sound = loader.loadSfx("sound/announcer/{}.wav".format(sfx))
+                sound.play()
 
     def update(self, dt):
         """Once a second, have each bot send in its orders. Then have those
         bots animate their actions.
         """
         self.tick_number += 1
+        living_bots = [b for b in self.bots if b._hp > 0]
         # First get all orders (so later bots don't have more information)
-        for b in self.bots:
+        for b in living_bots:
             b._get_orders(self.tick_number, self.get_visible_objects(b))
-        # Then move everyone (move order shouldn't have an advantage)
-        for b in self.bots:
+        # Then move everyone (so we can dodge)
+        for b in [b for b in living_bots if b._orders != Actions.Punch]:
+            b._execute_orders(dt, self)
+        # Punching comes last
+        for b in [b for b in living_bots if b._orders == Actions.Punch]:
             b._execute_orders(dt, self)
         # Then update the bullets (this allows dodging, if you're smart)
         for p in self.projectiles:
             p.update(dt)
-        # Calculate any collisions between any combination of bots and bullets
+        # Calculate any collisions between any bots
         self.kill_overlapping_bots()
+        if self.first_blood == 1:
+            self.first_blood = 2
 
     def get_object_at_position(self, v):
         for b in self.bots:
@@ -103,7 +116,8 @@ class BattleArena:
             other = self.get_object_at_position(b.get_position())
             if other and b and other != b:
                 self.announce(
-                    "{} and {} collided!".format(b.get_name(), other.get_name()),
+                    "{} and {} collided!".format(
+                        b.get_name(), other.get_name()),
                     sfx="Carnage")
                 b.take_damage(999)
                 other.take_damage(999)

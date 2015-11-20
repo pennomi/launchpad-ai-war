@@ -24,12 +24,11 @@ class Actions(Enum):
     TurnAround = 6
 
     # Attacking
-    Punch = 7  # Unleash a powerful melee attack
-    Shoot = 8  # Fire a weak bullet forward
+    Punch = 7
 
     # Lame Stuff
-    DoNothing = 9
-    Suicide = 10
+    DoNothing = 8
+    Suicide = 9
 
 
 class Bot:
@@ -113,9 +112,6 @@ class Bot:
             self._orders = None
 
     def _execute_orders(self, tick_length, battle):
-        if self._hp <= 0:
-            return
-
         # Pre-calculate some useful things
         new_pos = self.get_position()
         new_dir = self._model.getHpr()
@@ -164,9 +160,6 @@ class Bot:
 
         elif self._orders == Actions.Punch:
             self.punch(battle)
-
-        elif self._orders == Actions.Shoot:
-            self.shoot(battle)
 
         elif self._orders == Actions.DoNothing:
             self.safe_loop('idle')
@@ -223,16 +216,10 @@ class Bot:
                 battle.announce("{} is GODLIKE!".format(self.get_name()),
                                 color=(1.0, 0.5, 0.0, 1.0), sfx="Godlike")
 
-    def shoot(self, battle):
-        print("Shooting not implemented yet!")
-        self._actor.play('throw')
-
     def take_damage(self, amount):
         self._hp -= amount
         if self._hp <= 0:
             self._name_label.hide()
-            # self._name_label.setTransparency(True)
-            # self._name_label.setAlphaScale(0.25)
             if self._interval:
                 self._interval.pause()
             if not self._death_played:
