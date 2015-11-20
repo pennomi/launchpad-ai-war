@@ -114,12 +114,14 @@ class BattleArena:
         if self.first_blood == 1:
             self.first_blood = 2
 
-        # if only one team is left, reset
-        try:
-            t = self.bots[0].team
-        except IndexError:
-            t = None
-        if all([b.team == t for b in living_bots]) or self.tick > RESET_TIMER:
+        # Check reset parameters
+        if not living_bots:
+            self.reset()
+        else:
+            t = living_bots[0].team
+            if all([b.team == t for b in living_bots]):
+                self.reset()
+        if self.tick > RESET_TIMER:
             self.reset()
 
         # update the reset timer

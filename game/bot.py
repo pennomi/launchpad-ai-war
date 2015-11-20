@@ -31,7 +31,7 @@ class Actions(Enum):
     Suicide = 9
 
 
-class Bot:
+class Bot(object):
 
     def __init__(self, team, position, direction):
         self._orders = Actions.DoNothing
@@ -114,7 +114,7 @@ class Bot:
     def _execute_orders(self, tick_length, battle):
         # Pre-calculate some useful things
         new_pos = self.get_position()
-        new_dir = self._model.getHpr()
+        new_dir = self._model.getHpr()  # TODO: Getting rounding errors here
         velocity = self.get_direction()
 
         # If we're outside of the arena, take damage
@@ -178,7 +178,7 @@ class Bot:
         if self._hp <= 0:
             return
         self._interval = LerpPosHprInterval(
-            self._model, tick_length, new_pos, new_dir)
+            self._model, tick_length-0.05, new_pos, new_dir)
         self._interval.start()
 
     def safe_loop(self, animation):
