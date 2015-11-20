@@ -4,20 +4,18 @@ import random
 from game.bot import Bot, Actions
 
 
-class ScoobsterHailHydra(Bot):
+class ScoobYaUp(Bot):
     """Move toward enemies and punch them."""
     target = None
-
     def update(self, tick_number, visible_objects):
         # Check if something needs killed
         for v in visible_objects:
-            if v.get_position() == self.get_position() + self.get_direction():
+            if v.get_position() == self.get_position() + self.get_direction() and v.team != self.team:
                 return Actions.Punch
-            if v.get_position() + v.get_direction() == self.get_position() + self.get_direction():
-                return random.choice([Actions.MoveBackward, Actions.StrafeLeft, Actions.StrafeLeft])
-
+            if v.get_position() + v.get_direction() == self.get_position() + self.get_direction() and v.team != self.team:
+                return random.choice([Actions.StrafeRight, Actions.StrafeLeft, Actions.MoveBackward])
         # Try to move towards the nearest golem
-        nearest_dist = 99999999
+        nearest_dist = 9999
         for v in visible_objects:
             distance = (v.get_position() - self.get_position()).length()
             if distance < nearest_dist and distance != 0:
@@ -29,12 +27,11 @@ class ScoobsterHailHydra(Bot):
         else:
             nearest_pos = None
         if not nearest_pos:
-            return Actions.TurnLeft
+            return Actions.TurnRight
 
         x, y = nearest_pos.x, nearest_pos.y
 
         my_x, my_y = self.get_position().x, self.get_position().y
-        print(x, y, my_x, my_y)
 
         dir_x = self.get_direction().x
         dir_y = self.get_direction().y

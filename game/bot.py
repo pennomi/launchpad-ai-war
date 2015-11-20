@@ -110,9 +110,12 @@ class Bot:
             self._orders = self.update(tick_number, visible_objects)
         except Exception as e:
             print(type(self), e)
-            self._orders = Actions.Suicide
+            self._orders = None
 
     def _execute_orders(self, tick_length, battle):
+        if self._hp <= 0:
+            return
+
         # Pre-calculate some useful things
         new_pos = self.get_position()
         new_dir = self._model.getHpr()
@@ -121,7 +124,8 @@ class Bot:
         # If we're outside of the arena, take damage
         ARENA_SIZE = 13
         if new_pos.length() > ARENA_SIZE:
-            self.take_damage(1)
+            battle.announce("{} fled the battle!".format(self.get_name()))
+            self.take_damage(999)
 
         # Execute the order
         if self._orders == Actions.MoveForward:
@@ -169,10 +173,12 @@ class Bot:
 
         elif self._orders == Actions.Suicide:
             self._hp = 0
+            battle.announce("{} killed itself.".format(self.get_name()))
             self.take_damage(999)
 
         else:  # Bad orders detected! Kill this bot.
             self._hp = 0
+            battle.announce("{} made an illegal move and died.".format(self.get_name()))
             self.take_damage(999)
 
         # Animate the motion
@@ -191,6 +197,7 @@ class Bot:
         hazard = self.get_direction() + self.get_position()
         bot = battle.get_object_at_position(hazard)
         if isinstance(bot, Bot):
+            battle.announce("{} just pwned {}".format(self.get_name(), bot.get_name()))
             bot.take_damage(5)
 
     def shoot(self, battle):
