@@ -1,4 +1,3 @@
-import math
 import random
 from game.bot import Bot, Actions
 
@@ -15,19 +14,11 @@ class Hayden(Bot):
                     return Actions.DoNothing
                 elif self.team == v.team:
                     return Actions.TurnAround
-        nearest_bot = None
-        nearest_dist = 20
-        for v in visible_objects:
-            distance = (v.get_position() - self.get_position()).length()
-            if distance < nearest_dist:
-                nearest_bot = v
-                nearest_dist = distance
-                return nearest_bot
 
         if visible_objects:
             return Actions.MoveForward
 
-        return random.choice[Actions.TurnRight, Actions.TurnLeft]
+        return random.choice([Actions.TurnLeft, Actions.TurnRight])
 
 # class trackerjacker(Bot):
 #     def update(self, tick_number, visible_objects):
