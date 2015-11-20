@@ -228,3 +228,8 @@ class Bot:
             if not self._death_played:
                 self._actor.play('death')
                 self._death_played = True
+
+    def delete(self):
+        self._model.removeNode()
+        self._actor.cleanup()
+        self._name_label.removeNode()

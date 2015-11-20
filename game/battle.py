@@ -20,9 +20,10 @@ def make_label(m):
 class BattleArena:
     radius = 10
     tick_number = 0
-    camera_pos = Vec3(0, 0, 0)
+    camera_pos = Vec3(10, 0, 30)
     camera_look = Vec3(0, 0, 0)
     first_blood = 0  # 0 for not triggered, 1 for triggering, 2 for played
+    bots = []
 
     def __init__(self):
         # Load the arena model
@@ -31,28 +32,35 @@ class BattleArena:
 
         # Prepare several death message text boxes
         self.death_messages = []
+
+        # Load the bots dynamically
+        self.bot_classes = list(self.get_classes())
+        print("Loading bots:", [c.__name__ for c in self.bot_classes])
+
+        # Set up the battle
+        self.reset()
+
+    def reset(self):
+        self.first_blood = 0
+        self.tick_number = 0
+
+        # Clean up messages
+        for m in self.death_messages:
+            m.removeNode()
+        self.death_messages = []
         self.announce("Welcome to the LAUNCHPAD BATTLE ARENA!",
                       color=(0.2, 1, 0.2, 1))
 
-        # Initial camera state
-        camera.setPos(render, 10, 0, 30)
-        camera.lookAt(Point3(0, 0, 0))
-
-        # Set up the map (for later)
-        self.map = [[0 for _ in range(30)] for _ in range(30)]
-
-        # Set up variables
+        # Spawn the bots
+        for b in self.bots:
+            b.delete()
         self.bots = []
-        self.projectiles = []
-
-        # Load the bots dynamically
-        bot_classes = list(self.get_classes())
-        print("Loading bots:", [c.__name__ for c in bot_classes])
-        random.shuffle(bot_classes)
-        for i, cls in enumerate(bot_classes):
+        random.shuffle(self.bot_classes)
+        bots_offset = len(self.bot_classes) // 2
+        for i, cls in enumerate(self.bot_classes):
             self.bots.append(cls(
                 Teams.Blue if i % 2 else Teams.Red,
-                Vec3(-6 + i + random.randint(0, 1),
+                Vec3(-bots_offset + i + random.randint(0, 1),
                      -6 if i % 2 else 6 + random.randint(-1, 1),
                      0),
                 0 if i % 2 else 180
@@ -95,13 +103,16 @@ class BattleArena:
         # Punching comes last
         for b in [b for b in living_bots if b._orders == Actions.Punch]:
             b._execute_orders(dt, self)
-        # Then update the bullets (this allows dodging, if you're smart)
-        for p in self.projectiles:
-            p.update(dt)
         # Calculate any collisions between any bots
         self.kill_overlapping_bots()
+        # Tell sfx that they're ok to play again
         if self.first_blood == 1:
             self.first_blood = 2
+
+        # if only one team is left, reset
+        t = self.bots[0].team
+        if all([b.team == t for b in self.bots]) or self.tick_number > 2 * 60:
+            self.reset()
 
     def get_object_at_position(self, v):
         for b in self.bots:
