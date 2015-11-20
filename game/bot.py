@@ -7,9 +7,8 @@ from game.util import make_fov
 
 
 class Teams(tuple, Enum):
-    Blue = (0, 0, 1, 1)
-    Green = (0, 1, 0, 1)
-    Red = (1, 0, 0, 1)
+    Blue = (0.15, 0.15, 1, 1)
+    Red = (1, 0.1, 0.1, 1)
 
 
 class Actions(Enum):
@@ -40,6 +39,7 @@ class Bot:
         self._hp = 5
         self._death_played = False
         self._interval = None
+        self.kills = 0
 
         self.team = team
 
@@ -197,8 +197,30 @@ class Bot:
         hazard = self.get_direction() + self.get_position()
         bot = battle.get_object_at_position(hazard)
         if isinstance(bot, Bot):
-            battle.announce("{} just pwned {}".format(self.get_name(), bot.get_name()))
-            bot.take_damage(5)
+            bot.take_damage(5)  # TODO: This is fun as 1
+            if bot._hp > 0:
+                return
+            if bot.team == self.team:
+                message = "{self} killed its teammate {target}!"
+                self.kills -= 1
+            else:
+                message = "{self} just pwned {target}!"
+                self.kills += 1
+            battle.announce(message.format(self=self.get_name(),
+                                           target=bot.get_name()),
+                            color=self.team)
+            if self.kills == 2:
+                battle.announce("{} is ON FIRE!".format(self.get_name()),
+                                color=(1.0, 0.5, 0.0, 1.0), sfx="DoubleKill")
+            elif self.kills == 3:
+                battle.announce("{} is UNSTOPPABLE!".format(self.get_name()),
+                                color=(1.0, 0.5, 0.0, 1.0), sfx="TripleKill")
+            elif self.kills == 4:
+                battle.announce("{} is DOMINATING!".format(self.get_name()),
+                                color=(1.0, 0.5, 0.0, 1.0), sfx="Dominating")
+            elif self.kills > 4:
+                battle.announce("{} is GODLIKE!".format(self.get_name()),
+                                color=(1.0, 0.5, 0.0, 1.0), sfx="Godlike")
 
     def shoot(self, battle):
         print("Shooting not implemented yet!")

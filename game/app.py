@@ -25,6 +25,10 @@ class MainApp(ShowBase):
         base.setFrameRateMeter(True)
         self.build_lighting()
 
+        music = self.loader.loadSfx("sound/like-cats-and-dogs.wav")
+        music.setLoop(True)
+        music.play()
+
     def build_lighting(self):
         # Fog
         exp_fog = core.Fog("scene-wide-fog")

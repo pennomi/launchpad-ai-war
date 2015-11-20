@@ -11,7 +11,8 @@ from game.bot import Bot, Teams
 def make_label(m):
     return OnscreenText(
         text=m, pos=Vec3(-1.2, .25, 0), scale=0.05,
-        fg=(1.0, 1.0, 1.0, 1.0), align=TextNode.ALeft
+        fg=(1.0, 1.0, 1.0, 1.0), align=TextNode.ALeft,
+        shadow=(0, 0, 0, 1),
     )
 
 
@@ -29,7 +30,8 @@ class BattleArena:
 
         # Prepare several death message text boxes
         self.death_messages = []
-        self.announce("Welcome to the LAUNCHPAD BATTLE ARENA!")
+        self.announce("Welcome to the LAUNCHPAD BATTLE ARENA!",
+                      color=(0.2, 1, 0.2, 1))
 
         # Initial camera state
         camera.setPos(render, 10, 0, 30)
@@ -55,7 +57,7 @@ class BattleArena:
                 0 if i % 2 else 180
             ))
 
-    def announce(self, message, color=(1.0, 1.0, 1.0, 1.0)):
+    def announce(self, message, color=(1.0, 1.0, 1.0, 1.0), sfx=None):
         # Add the label
         l = make_label(message)
         l.setColorScale(color)
@@ -66,6 +68,10 @@ class BattleArena:
         for i, m in enumerate(self.death_messages):
             offset = max(5 - d, 0)
             m.setY((d - i + offset) / 15. + .5)
+
+        if sfx:
+            sound = loader.loadSfx("sound/announcer/{}.wav".format(sfx))
+            sound.play()
 
     def update(self, dt):
         """Once a second, have each bot send in its orders. Then have those
@@ -96,7 +102,9 @@ class BattleArena:
                 continue
             other = self.get_object_at_position(b.get_position())
             if other and b and other != b:
-                self.announce("{} and {} collided!".format(b.get_name(), other.get_name()))
+                self.announce(
+                    "{} and {} collided!".format(b.get_name(), other.get_name()),
+                    sfx="Carnage")
                 b.take_damage(999)
                 other.take_damage(999)
 
