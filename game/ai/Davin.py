@@ -17,6 +17,7 @@ class DemonBot5(Bot):
     Tactic1 = (Actions.StrafeLeft, Actions.DoNothing, Actions.TurnRight)
     Tactic2 = (Actions.MoveBackward, Actions.MoveForward)
     Tactic3 = (Actions.TurnLeft, Actions.MoveForward, Actions.TurnAround)
+    Tactic4 = (Actions.MoveForward, Actions.StrafeLeft, Actions.TurnAround)
     Smart_bots = ("Hayden", "Bob")
     # annoying = ("ScoobsterHailHydra", "Hayden", "Thomas", "HunterBot")
     prev_PositionX = 0
@@ -24,21 +25,23 @@ class DemonBot5(Bot):
     distance = 0
     in_danger = False
     DoneAlready = False
-    j = -1
+    j = 0
     x = -1
+    using_tactic = False
+    selected_tactic = Tactic1
 
     def use_tactic(self, Tactic):
         # x = -1
-        # return Tactic[1]
-        for v in range(0, len(Tactic)-1):
-            print("blah")
-            print(Tactic[v])
-            self.j+=1
+        if self.j < len(Tactic)-1:
+            self.j += 1
             return Tactic[self.j]
-        #     # print("Using tactic")
-        #     #
-        #     # print("Getting Ready")
-        #     # v += 1
+        else:
+            i = self.j
+            self.j = 0
+            self.using_tactic = False
+            print("no longer using tactic")
+            print("ended on " + str(Tactic[i]))
+            return Tactic[i]
 
     def update(self, tick_number, visible_objects):
         # self._hp += 600
@@ -49,8 +52,9 @@ class DemonBot5(Bot):
             self.prev_PositionY = v.get_position().y
             self.distance = (v.get_position() - self.get_position()).length()
 
-            # Punch anyone directly in front of you
+
             if v.team != self.team: # or v.get_name() in self.annoying:
+                # Punch anyone directly in front of you
                 if v.get_position() == self.get_position() + self.get_direction():
                     # print("HIYAH")
                     self.in_danger = False
@@ -76,6 +80,12 @@ class DemonBot5(Bot):
                         #     print("++++++++++++++++++++++++++++++++++++++++++")
                         #     return self.WAIT[self.x]
 
+                elif self.using_tactic == True:
+                    print("Using Tactic")
+                    return self.use_tactic(self.selected_tactic)
+
+                    # return self.use_tactic(self.selected_tactic)
+
                 #  ELSE, IF I"M FACING IN THE X DIRECTION
                 elif self.get_direction().x != 0:  # I'm facing in the x direction
 
@@ -85,7 +95,10 @@ class DemonBot5(Bot):
                         # if the robot is directly ahead, tell the robot to get ready
                         if self.get_position().y == v.get_position().y and v.get_name() != "SpinBot":
                             if v.get_name() == "ScoobYaUp" and self.distance == 2:
-                                    self.use_tactic(self.Tactic2)
+                                    self.selected_tactic = self.Tactic2
+                                    self.using_tactic = True
+                                    return self.selected_tactic[0]
+                                    # self.use_tactic(self.Tactic2)
                             else:
                                 # print("********************")
                                 # print("Facing X")
@@ -114,8 +127,11 @@ class DemonBot5(Bot):
                                         return Actions.StrafeLeft
                                     else:
                                         return Actions.StrafeRight
-                            elif v.get_name() == "ScoobYaUp" and self.distance == 2:
-                                self.use_tactic(self.Tactic2)
+                            elif v.get_name() == "ScoobYaUp":
+                                self.selected_tactic = self.Tactic2
+                                self.using_tactic = True
+                                print("using tactic Facing X")
+                                return self.selected_tactic[0]
                             else:
                                 self.x += 1
                                 if self.x > 2:
@@ -145,8 +161,12 @@ class DemonBot5(Bot):
                             #         return Actions.StrafeLeft
                     # Look for bots two spaces ahead
                     elif self.get_position().x + 3 == v.get_position().x and self.get_position().y == v.get_position().y and v.get_direction() == -(self.get_direction()):
-                        self.use_tactic(self.Tactic1)
                         print("funny")
+                        self.selected_tactic = self.Tactic3
+                        self.using_tactic = True
+                        self.j = 0
+                        return self.selected_tactic[0]
+
                         # return Actions.StrafeLeft
                     # # return something so that you don't get stuck doing nog
                     # else:
@@ -186,8 +206,12 @@ class DemonBot5(Bot):
                                         return Actions.StrafeLeft
                                     else:
                                         return Actions.StrafeRight
-                            elif v.get_name() == "ScoobYaUp" and self.distance == 2:
-                                self.use_tactic(self.Tactic2)
+                            elif v.get_name() == "ScoobYaUp":
+                                self.selected_tactic = self.Tactic2
+                                self.using_tactic = True
+                                print("using tactic Facing Y")
+                                return self.selected_tactic[0]
+                                # self.use_tactic(self.Tactic2)
                             else:
                                 self.x += 1
                                 if self.x > 2:
@@ -217,9 +241,12 @@ class DemonBot5(Bot):
                             #         return Actions.StrafeRight
 
                     elif self.get_position().y + 3 == v.get_position().y and self.get_position().x == v.get_position().x and v.get_direction() == -(self.get_direction()):
-                        self.use_tactic(self.Tactic1)
-                        print("not funhy")
-                        # return Actions.StrafeLeft
+                        self.selected_tactic = self.Tactic3
+                        self.using_tactic = True
+                        self.j = 0
+                        print("not fuhny")
+                        return self.selected_tactic[0]
+
                 # else:
                 #     # Try to move towards the nearest golem
                 #     nearest_dist = 9999
@@ -287,16 +314,22 @@ class DemonBot5(Bot):
 
         #  If nothing is returned from the for loop, probably utilize memory here
         if visible_objects and not self.DoneAlready:
+
+
             # print("super Califragilistic stupidcalidocious")
             return Actions.MoveForward
-        elif not self.in_danger:
+        elif not self.in_danger and not self.using_tactic:
             self.DoneAlready = False
+            print("turning because I don't know what else to do")
             # TODO use memory to know where to turn when you can't see the robot any more
-            return random.choice([Actions.TurnLeft, Actions.TurnLeft, Actions.TurnLeft, Actions.TurnLeft, Actions.StrafeLeft])
+            return Actions.TurnLeft
+        elif self.using_tactic:
+            print("Using Tactic")
+            return self.use_tactic(self.selected_tactic)
         else:
 
             self.DoneAlready = False
-            # print("Doing nothing")
+            print("Doing nothing")
             return Actions.DoNothing
 
 
@@ -424,25 +457,25 @@ class DemonBot5(Bot):
 #         return Actions.TurnAround
 
 
-class GimickBot(Bot):
-    MOVES = (Actions.TurnLeft, Actions.MoveBackward, Actions.TurnAround, Actions.Punch, Actions.MoveForward, Actions.TurnRight, Actions.MoveBackward, Actions.TurnLeft, Actions.TurnAround, Actions.Punch)
-    x = -1
-    """Ten successive moves"""
-    def update(self, tick_number, visible_objects):
-        for v in visible_objects:
-            if v.get_position() == self.get_position() + self.get_direction():
-                if v.team != self.team and v.get_name() != "DemonBot5":
-                    return Actions.Punch
-                else:
-                    return Actions.TurnLeft
-
-        if tick_number % 5:
-            self.x += 1
-            self.x %= len(self.MOVES) - 1
-
-            return self.MOVES[self.x]
-
-        return Actions.TurnLeft
+# class GimickBot(Bot):
+#     MOVES = (Actions.TurnLeft, Actions.MoveBackward, Actions.TurnAround, Actions.Punch, Actions.MoveForward, Actions.TurnRight, Actions.MoveBackward, Actions.TurnLeft, Actions.TurnAround, Actions.Punch)
+#     x = -1
+#     """Ten successive moves"""
+#     def update(self, tick_number, visible_objects):
+#         for v in visible_objects:
+#             if v.get_position() == self.get_position() + self.get_direction():
+#                 if v.team != self.team and v.get_name() != "DemonBot5":
+#                     return Actions.Punch
+#                 else:
+#                     return Actions.TurnLeft
+#
+#         if tick_number % 5:
+#             self.x += 1
+#             self.x %= len(self.MOVES) - 1
+#
+#             return self.MOVES[self.x]
+#
+#         return Actions.TurnLeft
 
 
 # class SpinBot(Bot):
