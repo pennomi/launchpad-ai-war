@@ -70,7 +70,7 @@ class Bot(object):
         self._actor.loop('idle')
         self._actor.setH(180)
 
-        # Floating Label
+        # Floating Name Label
         text = TextNode('node name')
         text.setText(self.__class__.__name__)
         text.setAlign(TextNode.ACenter)
@@ -84,7 +84,7 @@ class Bot(object):
         # fov.reparentTo(self._model)
 
     def update(self, tick_number, visible_objects):
-        return Actions.DoNothing
+        raise NotImplementedError()
 
     def get_position(self):
         """Return a rounded version of the position vector."""

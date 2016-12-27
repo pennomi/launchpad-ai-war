@@ -25,7 +25,6 @@ class Announcer(object):
 
     def play_sound(self):
         if self._announcement:
-            print(self._announcement)
             sound = loader.loadSfx("sound/announcer/" + self._announcement)
             sound.play()
 
