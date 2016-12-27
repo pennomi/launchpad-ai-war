@@ -5,11 +5,13 @@ import random
 
 from direct.gui.OnscreenText import OnscreenText
 from panda3d.core import Point3, Vec3, TextNode
+
+from game.announcer import Announcer, Announcement
 from game.util import furthest_points
 from game.bot import Bot, Teams, Actions
 
 
-RESET_TIMER = 2 * 60  # 2 minutes
+RESET_TIMER = 90  # 1.5 minutes
 
 
 def make_label(m):
@@ -26,8 +28,9 @@ class BattleArena:
     tick = 0
     camera_pos = Vec3(10, 0, 30)
     camera_look = Vec3(0, 0, 0)
-    first_blood = 0  # 0 for not triggered, 1 for triggering, 2 for played
+    first_blood = False
     bots = []
+    announcer = Announcer()
 
     def __init__(self):
         # Load the arena model
@@ -47,7 +50,7 @@ class BattleArena:
         self.reset()
 
     def reset(self):
-        self.first_blood = 0
+        self.first_blood = False
         self.tick = 0
 
         # Clean up messages
@@ -85,14 +88,11 @@ class BattleArena:
             m.setY((d - i + offset) / 15. + .5)
 
         if sfx:
-            if self.first_blood == 0:
-                self.first_blood = 1
-                sound = loader.loadSfx("sound/announcer/FirstBlood.wav")
-                sound.play()
-            # Don't play over the top of the first blood announcement
-            if self.first_blood == 2:
-                sound = loader.loadSfx("sound/announcer/{}.wav".format(sfx))
-                sound.play()
+            if not self.first_blood:
+                self.announcer.say(Announcement.FirstBlood)
+                self.first_blood = True
+            else:
+                self.announcer.say(sfx)
 
     def update(self, dt):
         """Once a second, have each bot send in its orders. Then have those
@@ -111,9 +111,6 @@ class BattleArena:
             b._execute_orders(dt, self)
         # Calculate any collisions between any bots
         self.kill_overlapping_bots()
-        # Tell sfx that they're ok to play again
-        if self.first_blood == 1:
-            self.first_blood = 2
 
         # Check reset parameters
         if not living_bots:
@@ -128,6 +125,10 @@ class BattleArena:
         # update the reset timer
         self.reset_label.setText(
             "{} seconds left in match".format(RESET_TIMER - self.tick))
+
+        # Play the sound that summarizes this round best
+        self.announcer.play_sound()
+        self.announcer.reset()
 
     def get_object_at_position(self, v):
         for b in self.bots:
@@ -144,7 +145,7 @@ class BattleArena:
                 self.announce(
                     "{} and {} collided!".format(
                         b.get_name(), other.get_name()),
-                    sfx="Carnage")
+                    sfx=Announcement.Carnage)
                 b.take_damage(999)
                 other.take_damage(999)
 
@@ -190,6 +191,7 @@ class BattleArena:
 
         return objects
 
+    # noinspection PyUnresolvedReferences
     def update_camera(self, dt):
         """Try to keep everyone in view at the same time."""
         living_players = [c for c in self.bots if c._hp > 0]

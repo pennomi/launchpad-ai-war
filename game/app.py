@@ -1,8 +1,6 @@
-"""A generic Panda3D class that handles all windowing, lifecycle management,
-and input management, then passes the relevant triggers to a game state class.
-
-Chances are in the future that this will also provide the game state switcher.
+"""Basic game settings which rarely, if ever, need modified.
 """
+
 from direct.showbase.ShowBase import ShowBase
 from direct.task import Task
 from panda3d import core
@@ -10,9 +8,10 @@ from game.battle import BattleArena
 from pandac.PandaModules import loadPrcFileData
 
 # Window config
-loadPrcFileData("", "window-title Launchpad AI War")
+loadPrcFileData("", "window-title AI War")
 
 
+# Set the turn timer to 1 second
 ORDER_DURATION = 1.0
 
 
@@ -22,7 +21,7 @@ class MainApp(ShowBase):
         self.battle = BattleArena()
         self.taskMgr.doMethodLater(ORDER_DURATION, self.update_orders, 'orders')
         self.taskMgr.add(self.update, "update")
-        base.setFrameRateMeter(True)
+        self.setFrameRateMeter(True)
         self.build_lighting()
 
         music = self.loader.loadSfx("sound/like-cats-and-dogs.wav")

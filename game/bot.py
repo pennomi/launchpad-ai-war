@@ -5,6 +5,8 @@ from direct.actor.Actor import Actor
 from direct.interval.LerpInterval import LerpPosHprInterval
 from panda3d.core import Vec3, NodePath, TextNode
 
+from game.announcer import Announcement
+
 
 class Teams(tuple, Enum):
     Blue = (0.15, 0.15, 1, 1)
@@ -205,19 +207,23 @@ class Bot(object):
             battle.announce(message.format(self=self.get_name(),
                                            target=bot.get_name()),
                             color=self.team,
-                            sfx="Ownage" if self.kills == 1 else None)
+                            sfx=Announcement.Ownage if self.kills == 1 else None)
             if self.kills == 2:
                 battle.announce("{} is ON FIRE!".format(self.get_name()),
-                                color=(1.0, 0.5, 0.0, 1.0), sfx="DoubleKill")
+                                color=(1.0, 0.5, 0.0, 1.0),
+                                sfx=Announcement.DoubleKill)
             elif self.kills == 3:
                 battle.announce("{} is UNSTOPPABLE!".format(self.get_name()),
-                                color=(1.0, 0.5, 0.0, 1.0), sfx="TripleKill")
+                                color=(1.0, 0.5, 0.0, 1.0),
+                                sfx=Announcement.TripleKill)
             elif self.kills == 4:
                 battle.announce("{} is DOMINATING!".format(self.get_name()),
-                                color=(1.0, 0.5, 0.0, 1.0), sfx="Dominating")
+                                color=(1.0, 0.5, 0.0, 1.0),
+                                sfx=Announcement.Dominating)
             elif self.kills > 4:
                 battle.announce("{} is GODLIKE!".format(self.get_name()),
-                                color=(1.0, 0.5, 0.0, 1.0), sfx="Godlike")
+                                color=(1.0, 0.5, 0.0, 1.0),
+                                sfx=Announcement.Godlike)
 
     def take_damage(self, amount):
         self._hp -= amount
