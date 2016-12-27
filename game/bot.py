@@ -1,9 +1,9 @@
+from __future__ import print_function
 from enum import Enum
 
 from direct.actor.Actor import Actor
 from direct.interval.LerpInterval import LerpPosHprInterval
 from panda3d.core import Vec3, NodePath, TextNode
-from game.util import make_fov
 
 
 class Teams(tuple, Enum):
@@ -108,7 +108,7 @@ class Bot(object):
         try:
             self._orders = self.update(tick_number, visible_objects)
         except Exception as e:
-            print(type(self), e)
+            print(self.__class__.__name__, e)
             self._orders = None
 
     def _execute_orders(self, tick_length, battle):
