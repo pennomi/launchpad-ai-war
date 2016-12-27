@@ -99,7 +99,7 @@ class BattleArena:
         bots animate their actions.
         """
         self.tick += 1
-        living_bots = [b for b in self.bots if b._hp > 0]
+        living_bots = [b for b in self.bots if b.alive]
         # First get all orders (so later bots don't have more information)
         for b in living_bots:
             b._get_orders(self.tick, self.get_visible_objects(b))
@@ -132,13 +132,13 @@ class BattleArena:
 
     def get_object_at_position(self, v):
         for b in self.bots:
-            if b.get_position() == v and b._hp > 0:
+            if b.get_position() == v and b.alive:
                 return b
         return None
 
     def kill_overlapping_bots(self):
         for b in self.bots:
-            if b._hp <= 0:
+            if not b.alive:
                 continue
             other = self.get_object_at_position(b.get_position())
             if other and b and other != b:
@@ -146,8 +146,8 @@ class BattleArena:
                     "{} and {} collided!".format(
                         b.get_name(), other.get_name()),
                     sfx=Announcement.Carnage)
-                b.take_damage(999)
-                other.take_damage(999)
+                b.die()
+                other.die()
 
     def get_classes(self):
         """Dynamically import all Bot subclasses from files at `game.ai.*`
@@ -165,7 +165,7 @@ class BattleArena:
         return classes
 
     def get_visible_objects(self, bot):
-        if bot._hp <= 0:
+        if not bot.alive:
             return []
 
         objects = []
@@ -174,8 +174,8 @@ class BattleArena:
         facing = bot.get_direction()
 
         for other in self.bots:
-            # Don't track self
-            if bot == other or other._hp <= 0:
+            # Don't track self or dead things
+            if bot == other or not other.alive:
                 continue
 
             # Get the relative vector of the bots
@@ -194,8 +194,8 @@ class BattleArena:
     # noinspection PyUnresolvedReferences
     def update_camera(self, dt):
         """Try to keep everyone in view at the same time."""
-        living_players = [c for c in self.bots if c._hp > 0]
-        line = furthest_points(c._model.getPos() for c in living_players)
+        # Use the actual model position here for smoother camera movement
+        line = furthest_points(c._model.getPos() for c in self.bots if c.alive)
 
         if line:
             direction = line[1] - line[0]

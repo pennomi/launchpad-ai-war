@@ -37,16 +37,16 @@ class Bot(object):
 
     def __init__(self, team, position, direction):
         self._orders = Actions.DoNothing
-        self._hp = 5
+        self.alive = True
         self._death_played = False
         self._interval = None
         self.kills = 0
 
         self.team = team
 
+        # Create an empty node to contain the actor, nametag, and FOV fan.
         self._model = NodePath('bot')
         self._model.reparentTo(render)
-
         self._model.setPos(position)
         self._model.setHpr(direction, 0, 0)
         self._model.setColorScale(*self.team)
@@ -80,6 +80,7 @@ class Bot(object):
         self._name_label.setScale(3, 3, 3)
 
         # Debug Field of View Cones
+        # from game.util import make_fov
         # fov = make_fov()
         # fov.reparentTo(self._model)
 
@@ -102,7 +103,7 @@ class Bot(object):
 
     def _get_orders(self, tick_number, visible_objects):
         # If the health is too low, die.
-        if self._hp <= 0:
+        if not self.alive:
             self._orders = Actions.Suicide
             return
 
@@ -123,7 +124,7 @@ class Bot(object):
         ARENA_SIZE = 13
         if new_pos.length() > ARENA_SIZE:
             battle.announce("{} fled the battle!".format(self.get_name()))
-            self.take_damage(999)
+            self.die()
 
         # Execute the order
         if self._orders == Actions.MoveForward:
@@ -167,17 +168,15 @@ class Bot(object):
             self.safe_loop('idle')
 
         elif self._orders == Actions.Suicide:
-            self._hp = 0
             battle.announce("{} killed itself.".format(self.get_name()))
-            self.take_damage(999)
+            self.die()
 
         else:  # Bad orders detected! Kill this bot.
-            self._hp = 0
             battle.announce("{} made an illegal move and died.".format(self.get_name()))
-            self.take_damage(999)
+            self.die()
 
         # Animate the motion
-        if self._hp <= 0:
+        if not self.alive:
             return
         self._interval = LerpPosHprInterval(
             self._model, tick_length-0.05, new_pos, new_dir)
@@ -195,8 +194,8 @@ class Bot(object):
         hazard = self.get_direction() + self.get_position()
         bot = battle.get_object_at_position(hazard)
         if isinstance(bot, Bot):
-            bot.take_damage(5)  # TODO: This is fun as 1
-            if bot._hp > 0:
+            bot.die()
+            if bot.alive:
                 return
             if bot.team == self.team:
                 message = "{self} killed its teammate {target}!"
@@ -225,15 +224,14 @@ class Bot(object):
                                 color=(1.0, 0.5, 0.0, 1.0),
                                 sfx=Announcement.Godlike)
 
-    def take_damage(self, amount):
-        self._hp -= amount
-        if self._hp <= 0:
-            self._name_label.hide()
-            if self._interval:
-                self._interval.pause()
-            if not self._death_played:
-                self._actor.play('death')
-                self._death_played = True
+    def die(self):
+        self.alive = False
+        self._name_label.hide()
+        if self._interval:
+            self._interval.pause()
+        if not self._death_played:
+            self._actor.play('death')
+            self._death_played = True
 
     def delete(self):
         self._model.removeNode()
