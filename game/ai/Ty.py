@@ -10,13 +10,13 @@ class Bae(Bot):
         self._name_label.setScale(4, 4, 4)
         v = None
         for v in visible_objects:
-            if v.get_position() == self.get_position() + self.get_direction() and v.team != self.team:
+            if v.position == self.position + self.direction and v.team != self.team:
                 return Actions.Punch
 
         if not v:
             return Actions.TurnLeft
 
-        if v.get_position() + v.get_direction() == self.get_position() + self.get_direction():
+        if v.position + v.direction == self.position + self.direction:
             return random.choice([Actions.StrafeLeft, Actions.StrafeRight])
 
         if visible_objects:
@@ -35,13 +35,13 @@ class SideBae(Bot):
         self._name_label.setScale(4, 4, 4)
         v = None
         for v in visible_objects:
-            if v.get_position() == self.get_position() + self.get_direction() and v.team != self.team:
+            if v.position == self.position + self.direction and v.team != self.team:
                 return Actions.Punch
 
         if not v:
             return Actions.TurnLeft
 
-        if v.get_position() + v.get_direction() == self.get_position() + self.get_direction():
+        if v.position + v.direction == self.position + self.direction:
             return random.choice([Actions.StrafeLeft, Actions.StrafeRight])
 
         if visible_objects:

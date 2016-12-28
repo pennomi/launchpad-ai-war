@@ -8,13 +8,13 @@ class MarksBot(Bot):
         for v in visible_objects:
             #return Actions.MoveBackward
 
-            if v.get_position() == self.get_position() + self.get_direction():
+            if v.position == self.position + self.direction:
                 return Actions.TurnRight #and Actions.MoveBackward
                 #return Actions.MoveBackward
                 return Actions.Punch
 
         #if visible_objects:
-        while v.get_position() == self.get_position() + 10:
+        while v.position == self.position + 10:
             return Actions.MoveBackward
 
         return Actions.TurnAround

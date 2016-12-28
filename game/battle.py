@@ -98,7 +98,7 @@ class BattleArena:
 
     def get_object_at_position(self, v):
         for b in self.bots:
-            if b.get_position() == v and b.alive:
+            if b.position == v and b.alive:
                 return b
         return None
 
@@ -107,7 +107,7 @@ class BattleArena:
         for b in self.bots:
             if not b.alive:
                 continue
-            other = self.get_object_at_position(b.get_position())
+            other = self.get_object_at_position(b.position)
             if other and b and other != b:
                 self.announcer.announce(
                     "{} and {} collided!".format(b.name, other.name),
@@ -139,7 +139,7 @@ class BattleArena:
         objects = []
 
         # Get the direction the bot is facing
-        facing = bot.get_direction()
+        facing = bot.direction
 
         for other in self.bots:
             # Don't track self or dead things

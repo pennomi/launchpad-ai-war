@@ -17,13 +17,13 @@ class Bob(Bot):
             self.next_action2 = None
             return b
         for v in visible_objects:
-            if v.get_position() == self.get_position() + self.get_direction() and v.team != self.team:
+            if v.position == self.position + self.direction and v.team != self.team:
                 return Actions.Punch
-            if v.get_position() == self.get_position() + self.get_direction() and v.team == self.team:
+            if v.position == self.position + self.direction and v.team == self.team:
                 return Actions.TurnLeft
 
             # If someone is going to walk into the same space as me
-            if v.get_position() + v.get_direction() == self.get_position() + self.get_direction():
+            if v.position + v.direction == self.position + self.direction:
                 self.next_action = Actions.StrafeLeft
                 self.next_action2 = Actions.TurnRight
                 return Actions.DoNothing

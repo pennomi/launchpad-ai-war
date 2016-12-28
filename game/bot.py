@@ -119,16 +119,16 @@ class Bot(object):
         old_val = self._global_stats.get(key, 0)
         self._global_stats[key] = old_val + value
 
-    def get_position(self):
+    @property
+    def position(self):
         """Return a rounded version of the position vector."""
-        # TODO: Change to a property
         # TODO: Have both model and "game position" so low framerate is ok.
         p = self._model.getPos()
         return Vec3(round(p.x, 0), round(p.y, 0), round(p.z, 0))
 
-    def get_direction(self):
+    @property
+    def direction(self):
         """Return a rounded version of the direction vector."""
-        # TODO: Change to a property
         # TODO: Have both model and "game position" so low framerate is ok.
         v = render.getRelativeVector(self._model, Vec3(0, 1, 0))
         v.normalize()
@@ -148,9 +148,9 @@ class Bot(object):
 
     def _execute_orders(self, tick_length, battle):
         # Pre-calculate some useful things
-        new_pos = self.get_position()
+        new_pos = self.position
         new_dir = self._model.getHpr()  # TODO: Getting rounding errors here
-        velocity = self.get_direction()
+        velocity = self.direction
 
         # If we're outside of the arena, take damage
         ARENA_SIZE = 13  # TODO: Move this to battle.py
@@ -228,7 +228,7 @@ class Bot(object):
             self._actor.play('punch')
 
         # Check if anything is in the bot's way.
-        hazard = self.get_direction() + self.get_position()
+        hazard = self.direction + self.position
         bot = battle.get_object_at_position(hazard)
         if not isinstance(bot, Bot):
             return

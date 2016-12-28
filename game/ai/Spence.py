@@ -7,9 +7,9 @@ def getEnemies(bot):
 class Thomas(Bot):
     def update(self, tick_number, visible_objects):
         for v in visible_objects:
-             if v.get_position() == self.get_position() + self.get_direction():
+             if v.position == self.position + self.direction:
                  return Actions.Punch
-             elif v.get_position() == self.get_position() + 15:
+             elif v.position == self.position + 15:
                  return Actions.TurnAround
              else:
                  return Actions.MoveForward

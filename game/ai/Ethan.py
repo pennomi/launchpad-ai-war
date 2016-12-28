@@ -10,20 +10,20 @@ class ScoobYaUp(Bot):
     def update(self, tick_number, visible_objects):
         # Check if something needs killed
         for v in visible_objects:
-            if v.get_position() == self.get_position() + self.get_direction() and v.team != self.team:
+            if v.position == self.position + self.direction and v.team != self.team:
                 return Actions.Punch
-            if v.get_position() + v.get_direction() == self.get_position() + self.get_direction() and v.team != self.team:
+            if v.position + v.direction == self.position + self.direction and v.team != self.team:
                 return random.choice([Actions.StrafeRight, Actions.StrafeLeft, Actions.MoveBackward])
         # Try to move towards the nearest golem
         nearest_dist = 9999
         for v in visible_objects:
-            distance = (v.get_position() - self.get_position()).length()
+            distance = (v.position - self.position).length()
             if distance < nearest_dist and distance != 0:
                 nearest_dist = distance
                 self.target = v
 
         if self.target:
-            nearest_pos = self.target.get_position()
+            nearest_pos = self.target.position
         else:
             nearest_pos = None
         if not nearest_pos:
@@ -31,10 +31,10 @@ class ScoobYaUp(Bot):
 
         x, y = nearest_pos.x, nearest_pos.y
 
-        my_x, my_y = self.get_position().x, self.get_position().y
+        my_x, my_y = self.position.x, self.position.y
 
-        dir_x = self.get_direction().x
-        dir_y = self.get_direction().y
+        dir_x = self.direction.x
+        dir_y = self.direction.y
 
         dx = x - my_x
         dy = y - my_y

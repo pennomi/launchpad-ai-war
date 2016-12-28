@@ -8,7 +8,7 @@ class HunterBot(Bot):
     """Move toward enemies and punch them."""
     def update(self, tick_number, visible_objects):
         for v in visible_objects:
-            if v.get_position() == self.get_position() + self.get_direction():
+            if v.position == self.position + self.direction:
                 if v.team != self.team:
                     return Actions.Punch
                 else:
@@ -40,7 +40,7 @@ class BigUglyRockPerson(Bot):
             Actions.DoNothing,
         }
         good_moves = set()
-        forward = self.get_position() + self.get_direction()
+        forward = self.position + self.direction
         enemies = [b for b in bots if b.team != self.team]
 
         # Find the nearest enemy
@@ -57,14 +57,14 @@ class BigUglyRockPerson(Bot):
 
         for b in bots:
             # Calculate some stuff
-            b_forward = b.get_position() + b.get_direction()
-            b_forward2 = b.get_position() + b.get_direction() + b.get_direction()
+            b_forward = b.position + b.direction
+            b_forward2 = b.position + b.direction + b.direction
 
             # TODO: Never move forward onto a square next to an enemy!
             # First turn, then strafe
 
             # If the square I'm about to move into is occupied by anyone
-            if b.get_position() == forward:
+            if b.position == forward:
                 if b in enemies:
                     # TODO: But if he's looking at me, can I dodge?
                     good_moves.add(Actions.Punch)
@@ -72,7 +72,7 @@ class BigUglyRockPerson(Bot):
                     # Don't walk forward! We might collide
                     possible_moves.discard(Actions.MoveForward)
                     # If my ally is about to walk into me, don't just sit there
-                    if b_forward == self.get_position():
+                    if b_forward == self.position:
                         possible_moves.discard(Actions.DoNothing)
                         possible_moves.discard(Actions.TurnLeft)
                         possible_moves.discard(Actions.TurnRight)
@@ -137,18 +137,18 @@ class BigUglyRockPerson(Bot):
         nearest_bot = None
         nearest_dist = 999
         for b in bots:
-            distance = (b.get_position() - self.get_position()).length()
+            distance = (b.position - self.position).length()
             if distance < nearest_dist and distance != 0:
                 nearest_dist = distance
                 nearest_bot = b
         return nearest_bot, nearest_dist
 
     def get_direction_to_bot(self, bot):
-        v = bot.get_position() - self.get_position()
+        v = bot.position - self.position
         v.normalize()
 
         # Get the angle between the two vectors
-        facing = self.get_direction()
+        facing = self.direction
         relative_angle = facing.relativeAngleDeg(v)
 
         # Check if it's small enough

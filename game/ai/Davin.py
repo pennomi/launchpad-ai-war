@@ -36,13 +36,13 @@ class DemonBot5(Bot):
         for v in visible_objects:
 
             # save positions for memory
-            self.prev_PositionX = v.get_position().x
-            self.prev_PositionY = v.get_position().y
-            self.distance = (v.get_position() - self.get_position()).length()
+            self.prev_PositionX = v.position.x
+            self.prev_PositionY = v.position.y
+            self.distance = (v.position - self.position).length()
 
             if v.team != self.team:  # or v.name in self.annoying:
                 # Punch anyone directly in front of you
-                if v.get_position() == self.get_position() + self.get_direction():
+                if v.position == self.position + self.direction:
                     self.in_danger = False
                     self.x = -1
                     return Actions.Punch
@@ -59,11 +59,11 @@ class DemonBot5(Bot):
                     # return self.use_tactic(self.selected_tactic)
 
                 #  ELSE, IF I"M FACING IN THE X DIRECTION
-                elif self.get_direction().x != 0:  # I'm facing in the x direction
+                elif self.direction.x != 0:  # I'm facing in the x direction
                     #  Handle if approaching the same square as another bot
-                    if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
+                    if self.position + self.direction == v.position+v.direction:
                         # if the robot is directly ahead, tell the robot to get ready
-                        if self.get_position().y == v.get_position().y and v.name != "SpinBot":
+                        if self.position.y == v.position.y and v.name != "SpinBot":
                             if v.name == "ScoobYaUp" and self.distance == 2:
                                     self.selected_tactic = self.Tactic2
                                     self.using_tactic = True
@@ -79,13 +79,13 @@ class DemonBot5(Bot):
                             if v.name in self.Smart_bots or v.name[:-1] == "Thomas":
                                 self.x = -1
 
-                                if v.get_position().x > self.get_position().x:
-                                    if v.get_position().y == self.get_position().y-1:
+                                if v.position.x > self.position.x:
+                                    if v.position.y == self.position.y-1:
                                         return Actions.StrafeRight
                                     else:
                                         return Actions.StrafeLeft
                                 else:
-                                    if v.get_position().y == self.get_position().y-1:
+                                    if v.position.y == self.position.y-1:
                                         return Actions.StrafeLeft
                                     else:
                                         return Actions.StrafeRight
@@ -97,13 +97,13 @@ class DemonBot5(Bot):
                                 self.x += 1
                                 if self.x > 2:
                                     self.x = -1
-                                    if v.get_position().x > self.get_position().x:
-                                        if v.get_position().y == self.get_position().y-1:
+                                    if v.position.x > self.position.x:
+                                        if v.position.y == self.position.y-1:
                                             return Actions.StrafeRight
                                         else:
                                             return Actions.StrafeLeft
                                     else:
-                                        if v.get_position().y == self.get_position().y-1:
+                                        if v.position.y == self.position.y-1:
                                             return Actions.StrafeLeft
                                         else:
                                             return Actions.StrafeRight
@@ -111,7 +111,7 @@ class DemonBot5(Bot):
                                 else:
                                     return Actions.DoNothing
                     # Look for bots two spaces ahead
-                    elif self.get_position().x + 3 == v.get_position().x and self.get_position().y == v.get_position().y and v.get_direction() == -(self.get_direction()):
+                    elif self.position.x + 3 == v.position.x and self.position.y == v.position.y and v.direction == -(self.direction):
                         self.selected_tactic = self.Tactic3
                         self.using_tactic = True
                         self.j = 0
@@ -123,12 +123,12 @@ class DemonBot5(Bot):
                     #     return Actions.MoveForward
 
                 # ELSE, IF I"M FACING IN THE Y DIRECTION
-                elif self.get_direction().y != 0:  # I'm facing in the y direction
+                elif self.direction.y != 0:  # I'm facing in the y direction
                     #  Handle if approaching the same square as another bot. WORKING!
-                    if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
+                    if self.position + self.direction == v.position+v.direction:
 
                         #  If the robot is directly ahead, get ready
-                        if self.get_position().x == v.get_position().x and v.name != "SpinBot":
+                        if self.position.x == v.position.x and v.name != "SpinBot":
                             self.in_danger = True
                             self.x = -1
                             return Actions.StrafeLeft
@@ -137,13 +137,13 @@ class DemonBot5(Bot):
                         else:
                             if v.name in self.Smart_bots or v.name[:-1] == "Thomas":
                                 self.x = -1
-                                if v.get_position().y < self.get_position().y:
-                                    if v.get_position().x == self.get_position().x-1:
+                                if v.position.y < self.position.y:
+                                    if v.position.x == self.position.x-1:
                                         return Actions.StrafeRight
                                     else:
                                         return Actions.StrafeLeft
                                 else:
-                                    if v.get_position().x == self.get_position().x-1:
+                                    if v.position.x == self.position.x-1:
                                         return Actions.StrafeLeft
                                     else:
                                         return Actions.StrafeRight
@@ -156,13 +156,13 @@ class DemonBot5(Bot):
                                 self.x += 1
                                 if self.x > 2:
                                     self.x = -1
-                                    if v.get_position().y < self.get_position().y:
-                                        if v.get_position().x == self.get_position().x-1:
+                                    if v.position.y < self.position.y:
+                                        if v.position.x == self.position.x-1:
                                             return Actions.StrafeRight
                                         else:
                                             return Actions.StrafeLeft
                                     else:
-                                        if v.get_position().x == self.get_position().x-1:
+                                        if v.position.x == self.position.x-1:
                                             return Actions.StrafeLeft
                                         else:
                                             return Actions.StrafeRight
@@ -170,7 +170,7 @@ class DemonBot5(Bot):
                                 else:
                                     return Actions.DoNothing
 
-                    elif self.get_position().y + 3 == v.get_position().y and self.get_position().x == v.get_position().x and v.get_direction() == -(self.get_direction()):
+                    elif self.position.y + 3 == v.position.y and self.position.x == v.position.x and v.direction == -(self.direction):
                         self.selected_tactic = self.Tactic3
                         self.using_tactic = True
                         self.j = 0
@@ -178,20 +178,20 @@ class DemonBot5(Bot):
 
             # If the robot is on the same team
             elif v.team == self.team:
-                if v.get_position() == self.get_position() + self.get_direction():
+                if v.position == self.position + self.direction:
                     self.in_danger = False
                     self.x = -1
                     return Actions.TurnLeft
-                elif self.get_direction().x != 0:  # I'm facing in the x direction
+                elif self.direction.x != 0:  # I'm facing in the x direction
 
                     #  Handle if approaching the same square as another bot
-                    if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
+                    if self.position + self.direction == v.position+v.direction:
                         return Actions.TurnLeft
 
                 # ELSE, IF I"M FACING IN THE Y DIRECTION
-                elif self.get_direction().y != 0:  # I'm facing in the y direction
+                elif self.direction.y != 0:  # I'm facing in the y direction
                     # Handle if approaching the same square as another bot. WORKING!
-                    if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
+                    if self.position + self.direction == v.position+v.direction:
                         return Actions.TurnLeft
 
         # If nothing is returned from the for loop, probably utilize memory here

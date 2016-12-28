@@ -9,8 +9,8 @@ class MattBot(Bot):
         if enemies == False:
             return Actions.TurnLeft
         for v in visible_objects:
-            Enemy = v.get_position()
-            Self = self.get_position()
+            Enemy = v.position
+            Self = self.position
             distance_to_enemy = (Enemy - Self).length()
 
             if distance_to_enemy < 2:
