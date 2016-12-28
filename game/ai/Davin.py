@@ -40,7 +40,7 @@ class DemonBot5(Bot):
             self.prev_PositionY = v.get_position().y
             self.distance = (v.get_position() - self.get_position()).length()
 
-            if v.team != self.team:  # or v.get_name() in self.annoying:
+            if v.team != self.team:  # or v.name in self.annoying:
                 # Punch anyone directly in front of you
                 if v.get_position() == self.get_position() + self.get_direction():
                     self.in_danger = False
@@ -63,8 +63,8 @@ class DemonBot5(Bot):
                     #  Handle if approaching the same square as another bot
                     if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
                         # if the robot is directly ahead, tell the robot to get ready
-                        if self.get_position().y == v.get_position().y and v.get_name() != "SpinBot":
-                            if v.get_name() == "ScoobYaUp" and self.distance == 2:
+                        if self.get_position().y == v.get_position().y and v.name != "SpinBot":
+                            if v.name == "ScoobYaUp" and self.distance == 2:
                                     self.selected_tactic = self.Tactic2
                                     self.using_tactic = True
                                     return self.selected_tactic[0]
@@ -76,7 +76,7 @@ class DemonBot5(Bot):
 
                         #  if the robot is coming from the side, wait
                         else:
-                            if v.get_name()in self.Smart_bots or v.get_name()[:-1] == "Thomas":
+                            if v.name in self.Smart_bots or v.name[:-1] == "Thomas":
                                 self.x = -1
 
                                 if v.get_position().x > self.get_position().x:
@@ -89,7 +89,7 @@ class DemonBot5(Bot):
                                         return Actions.StrafeLeft
                                     else:
                                         return Actions.StrafeRight
-                            elif v.get_name() == "ScoobYaUp":
+                            elif v.name == "ScoobYaUp":
                                 self.selected_tactic = self.Tactic2
                                 self.using_tactic = True
                                 return self.selected_tactic[0]
@@ -128,14 +128,14 @@ class DemonBot5(Bot):
                     if self.get_position() + self.get_direction() == v.get_position()+v.get_direction():
 
                         #  If the robot is directly ahead, get ready
-                        if self.get_position().x == v.get_position().x and v.get_name() != "SpinBot":
+                        if self.get_position().x == v.get_position().x and v.name != "SpinBot":
                             self.in_danger = True
                             self.x = -1
                             return Actions.StrafeLeft
 
                         # if the robot is coming from the side, wait
                         else:
-                            if v.get_name()in self.Smart_bots or v.get_name()[:-1] == "Thomas":
+                            if v.name in self.Smart_bots or v.name[:-1] == "Thomas":
                                 self.x = -1
                                 if v.get_position().y < self.get_position().y:
                                     if v.get_position().x == self.get_position().x-1:
@@ -147,7 +147,7 @@ class DemonBot5(Bot):
                                         return Actions.StrafeLeft
                                     else:
                                         return Actions.StrafeRight
-                            elif v.get_name() == "ScoobYaUp":
+                            elif v.name == "ScoobYaUp":
                                 self.selected_tactic = self.Tactic2
                                 self.using_tactic = True
                                 return self.selected_tactic[0]

@@ -1,25 +1,15 @@
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 from importlib import import_module
 import os
 import random
 
-from direct.gui.OnscreenText import OnscreenText
-from panda3d.core import Point3, Vec3, TextNode
+from panda3d.core import Point3, Vec3
 
-from game.announcer import Announcer, Announcement
-from game.util import furthest_points
-from game.bot import Bot, Teams, Actions
+from game.announcer import Announcer, Announcement, make_label, Color
+from game.bot import Bot, Actions
 
 
 RESET_TIMER = 90  # 1.5 minutes
-
-
-def make_label(m):
-    return OnscreenText(
-        text=m, pos=Vec3(-1.2, .25, 0), scale=0.05,
-        fg=(1.0, 1.0, 1.0, 1.0), align=TextNode.ALeft,
-        shadow=(0, 0, 0, 1),
-    )
 
 
 # noinspection PyProtectedMember
@@ -28,7 +18,6 @@ class BattleArena:
     tick = 0
     camera_pos = Vec3(10, 0, 30)
     camera_look = Vec3(0, 0, 0)
-    first_blood = False
     bots = []
     announcer = Announcer()
 
@@ -36,11 +25,8 @@ class BattleArena:
         # Load the arena model
         self.model = loader.loadModel("models/Arena.egg")
         self.model.reparentTo(render)
-        self.reset_label = make_label("")
+        self.reset_label = make_label("", Color.White)
         self.reset_label.setY(-0.9)
-
-        # Prepare several death message text boxes
-        self.death_messages = []
 
         # Load the bots dynamically
         self.bot_classes = list(self.get_classes())
@@ -50,85 +36,65 @@ class BattleArena:
         self.reset()
 
     def reset(self):
-        self.first_blood = False
-        self.tick = 0
-
         # Clean up messages
-        for m in self.death_messages:
-            m.removeNode()
-        self.death_messages = []
-        self.announce("Welcome to the LAUNCHPAD BATTLE ARENA!",
-                      color=(0.2, 1, 0.2, 1))
+        self.announcer.reset()
+
+        # Setup
+        self.tick = 0
+        self.announcer.announce(
+            "Welcome to the LAUNCHPAD BATTLE ARENA!", color=(0.2, 1, 0.2, 1))
 
         # Spawn the bots
         for b in self.bots:
+            b._write_global_stats()
             b.delete()
         self.bots = []
         random.shuffle(self.bot_classes)
         bots_offset = len(self.bot_classes) // 2
         for i, cls in enumerate(self.bot_classes):
             self.bots.append(cls(
-                Teams.Blue if i % 2 else Teams.Red,
+                Color.Blue if i % 2 else Color.Red,
                 Vec3(-bots_offset + i + random.randint(0, 1),
                      -6 if i % 2 else 6 + random.randint(-1, 1),
                      0),
                 0 if i % 2 else 180
             ))
 
-    def announce(self, message, color=(1.0, 1.0, 1.0, 1.0), sfx=None):
-        # Add the label
-        l = make_label(message)
-        l.setColorScale(color)
-        self.death_messages.append(l)
-
-        # Layout the messages
-        d = len(self.death_messages)
-        for i, m in enumerate(self.death_messages):
-            offset = max(5 - d, 0)
-            m.setY((d - i + offset) / 15. + .5)
-
-        if sfx:
-            if not self.first_blood:
-                self.announcer.say(Announcement.FirstBlood)
-                self.first_blood = True
-            else:
-                self.announcer.say(sfx)
-
     def update(self, dt):
         """Once a second, have each bot send in its orders. Then have those
         bots animate their actions.
         """
         self.tick += 1
+
         living_bots = [b for b in self.bots if b.alive]
         # First get all orders (so later bots don't have more information)
         for b in living_bots:
             b._get_orders(self.tick, self.get_visible_objects(b))
         # Then move everyone (so we can dodge)
+        # TODO: Instead sort the list by action priority then iterate once
         for b in [b for b in living_bots if b._orders != Actions.Punch]:
             b._execute_orders(dt, self)
         # Punching comes last
         for b in [b for b in living_bots if b._orders == Actions.Punch]:
             b._execute_orders(dt, self)
+
         # Calculate any collisions between any bots
-        self.kill_overlapping_bots()
+        self._kill_overlapping_bots()
 
         # Check reset parameters
-        if not living_bots:
+        if not living_bots:  # Everyone's dead
             self.reset()
-        else:
-            t = living_bots[0].team
-            if all([b.team == t for b in living_bots]):
-                self.reset()
-        if self.tick > RESET_TIMER:
+        elif self.tick > RESET_TIMER:  # Out of time
+            self.reset()
+        elif len({b.team for b in living_bots}) == 1:  # Only one team left
             self.reset()
 
-        # update the reset timer
+        # Update the reset timer
         self.reset_label.setText(
             "{} seconds left in match".format(RESET_TIMER - self.tick))
 
         # Play the sound that summarizes this round best
         self.announcer.play_sound()
-        self.announcer.reset()
 
     def get_object_at_position(self, v):
         for b in self.bots:
@@ -136,18 +102,20 @@ class BattleArena:
                 return b
         return None
 
-    def kill_overlapping_bots(self):
+    def _kill_overlapping_bots(self):
+        """Calculate which bots are at the same position and kill them."""
         for b in self.bots:
             if not b.alive:
                 continue
             other = self.get_object_at_position(b.get_position())
             if other and b and other != b:
-                self.announce(
-                    "{} and {} collided!".format(
-                        b.get_name(), other.get_name()),
+                self.announcer.announce(
+                    "{} and {} collided!".format(b.name, other.name),
                     sfx=Announcement.Carnage)
                 b.die()
                 other.die()
+                b.record_stat("collisions", 1)
+                other.record_stat("collisions", 1)
 
     def get_classes(self):
         """Dynamically import all Bot subclasses from files at `game.ai.*`
@@ -223,3 +191,18 @@ class BattleArena:
         self.camera_look += (center - self.camera_look) * camera_speed
         camera.setPos(render, *self.camera_pos)
         camera.lookAt(Point3(*self.camera_look))
+
+
+def furthest_points(point_list):
+    """Taking a list of points, calculate which two are furthest away from
+    each other. (Inefficient algorithm, but who cares with a dozen points?)
+    """
+    greatest_distance = 0
+    best_points = None
+    for p1 in point_list:
+        for p2 in point_list:
+            distance = (p1 - p2).length()
+            if distance > greatest_distance:
+                greatest_distance = distance
+                best_points = (p1, p2)
+    return best_points

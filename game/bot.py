@@ -1,16 +1,22 @@
-from __future__ import print_function
+from __future__ import print_function, unicode_literals, division
+
+import json
 from enum import Enum
 
 from direct.actor.Actor import Actor
 from direct.interval.LerpInterval import LerpPosHprInterval
 from panda3d.core import Vec3, NodePath, TextNode
 
-from game.announcer import Announcement
+from game.announcer import Announcement, Color
 
 
-class Teams(tuple, Enum):
-    Blue = (0.15, 0.15, 1, 1)
-    Red = (1, 0.1, 0.1, 1)
+KILLSTREAK_MESSAGES = {
+    2: ("{} is SICK with a double kill!", Announcement.DoubleKill),
+    3: ("{} is ON FIRE with a triple kill!", Announcement.TripleKill),
+    4: ("{} is DOMINATING with a 4x kill streak!", Announcement.Dominating),
+}
+MEGA_KILLSTREAK_MESSAGE = ("{} is GODLIKE with a {}x kill streak!",
+                           Announcement.Godlike)
 
 
 class Actions(Enum):
@@ -34,15 +40,20 @@ class Actions(Enum):
 
 
 class Bot(object):
+    """The base class for all bots. Just subclass and implement `update` to
+    build your very own battle AI!
+    """
+    _orders = Actions.DoNothing
+    _death_played = False
+    _interval = None
+    alive = True
+    kills = 0
+    _global_stats = None
 
     def __init__(self, team, position, direction):
-        self._orders = Actions.DoNothing
-        self.alive = True
-        self._death_played = False
-        self._interval = None
-        self.kills = 0
-
+        # Initialize some vars
         self.team = team
+        self._load_global_stats()
 
         # Create an empty node to contain the actor, nametag, and FOV fan.
         self._model = NodePath('bot')
@@ -79,34 +90,55 @@ class Bot(object):
         self._name_label.setPos(Vec3(0, 0, 6))
         self._name_label.setScale(3, 3, 3)
 
-        # Debug Field of View Cones
-        # from game.util import make_fov
-        # fov = make_fov()
-        # fov.reparentTo(self._model)
+        # Increment the number of games played
+        self.record_stat("games", 1)
 
     def update(self, tick_number, visible_objects):
+        """Subclass and implement this method to make your own bot!"""
         raise NotImplementedError()
+
+    @property
+    def _global_stats_filepath(self):
+        """Return the filepath to the stats json file."""
+        return "stats/{}.json".format(self.name)
+
+    def _load_global_stats(self):
+        try:
+            with open(self._global_stats_filepath, 'r') as infile:
+                self._global_stats = json.load(infile)
+        except IOError:
+            self._global_stats = {}
+
+    def _write_global_stats(self):
+        with open(self._global_stats_filepath, 'w') as outfile:
+            json.dump(self._global_stats, outfile)
+
+    def record_stat(self, key, value):
+        """Add an integer to a stat safely."""
+        assert type(value) == int
+        old_val = self._global_stats.get(key, 0)
+        self._global_stats[key] = old_val + value
 
     def get_position(self):
         """Return a rounded version of the position vector."""
+        # TODO: Change to a property
+        # TODO: Have both model and "game position" so low framerate is ok.
         p = self._model.getPos()
         return Vec3(round(p.x, 0), round(p.y, 0), round(p.z, 0))
 
     def get_direction(self):
         """Return a rounded version of the direction vector."""
+        # TODO: Change to a property
+        # TODO: Have both model and "game position" so low framerate is ok.
         v = render.getRelativeVector(self._model, Vec3(0, 1, 0))
         v.normalize()
         return Vec3(round(v.x, 0), round(v.y, 0), round(v.z, 0))
 
-    def get_name(self):
+    @property
+    def name(self):
         return self.__class__.__name__
 
     def _get_orders(self, tick_number, visible_objects):
-        # If the health is too low, die.
-        if not self.alive:
-            self._orders = Actions.Suicide
-            return
-
         # noinspection PyBroadException
         try:
             self._orders = self.update(tick_number, visible_objects)
@@ -121,9 +153,9 @@ class Bot(object):
         velocity = self.get_direction()
 
         # If we're outside of the arena, take damage
-        ARENA_SIZE = 13
+        ARENA_SIZE = 13  # TODO: Move this to battle.py
         if new_pos.length() > ARENA_SIZE:
-            battle.announce("{} fled the battle!".format(self.get_name()))
+            battle.announcer.announce("{} fled the battle!".format(self.name))
             self.die()
 
         # Execute the order
@@ -168,12 +200,14 @@ class Bot(object):
             self.safe_loop('idle')
 
         elif self._orders == Actions.Suicide:
-            battle.announce("{} killed itself.".format(self.get_name()))
+            battle.announcer.announce("{} killed itself.".format(self.name))
             self.die()
+            self.record_stat("suicides", 1)
 
         else:  # Bad orders detected! Kill this bot.
-            battle.announce("{} made an illegal move and died.".format(self.get_name()))
+            battle.announcer.announce("{} made an illegal move and died.".format(self.name))
             self.die()
+            self.record_stat("exceptions", 1)
 
         # Animate the motion
         if not self.alive:
@@ -189,44 +223,41 @@ class Bot(object):
             self._actor.loop(animation)
 
     def punch(self, battle):
+        # Ensure mutual kills animate correctly
         if not self._death_played:
             self._actor.play('punch')
+
+        # Check if anything is in the bot's way.
         hazard = self.get_direction() + self.get_position()
         bot = battle.get_object_at_position(hazard)
-        if isinstance(bot, Bot):
-            bot.die()
-            if bot.alive:
-                return
-            if bot.team == self.team:
-                message = "{self} killed its teammate {target}!"
-                self.kills -= 1
-            else:
-                message = "{self} just pwned {target}!"
-                self.kills += 1
-            battle.announce(message.format(self=self.get_name(),
-                                           target=bot.get_name()),
-                            color=self.team,
-                            sfx=Announcement.Ownage if self.kills == 1 else None)
-            if self.kills == 2:
-                battle.announce("{} is ON FIRE!".format(self.get_name()),
-                                color=(1.0, 0.5, 0.0, 1.0),
-                                sfx=Announcement.DoubleKill)
-            elif self.kills == 3:
-                battle.announce("{} is UNSTOPPABLE!".format(self.get_name()),
-                                color=(1.0, 0.5, 0.0, 1.0),
-                                sfx=Announcement.TripleKill)
-            elif self.kills == 4:
-                battle.announce("{} is DOMINATING!".format(self.get_name()),
-                                color=(1.0, 0.5, 0.0, 1.0),
-                                sfx=Announcement.Dominating)
-            elif self.kills > 4:
-                battle.announce("{} is GODLIKE!".format(self.get_name()),
-                                color=(1.0, 0.5, 0.0, 1.0),
-                                sfx=Announcement.Godlike)
+        if not isinstance(bot, Bot):
+            return
+        bot.die()
+
+        # Show the standard kill text
+        if bot.team == self.team:
+            message = "{self} killed its teammate {target}!"
+            self.record_stat("teamkills", 1)
+        else:
+            message = "{self} just pwned {target}!"
+            self.record_stat("kills", 1)
+            self.kills += 1
+        battle.announcer.announce(
+            message.format(self=self.name, target=bot.name),
+            color=self.team, sfx=Announcement.Ownage)
+
+        # Show special text for kill streaks
+        if self.kills > 1:
+            message, sfx = KILLSTREAK_MESSAGES.get(
+                self.kills, MEGA_KILLSTREAK_MESSAGE)
+            battle.announcer.announce(
+                message.format(self.name, self.kills),
+                color=Color.Orange, sfx=sfx)
 
     def die(self):
         self.alive = False
         self._name_label.hide()
+        self.record_stat("deaths", 1)
         if self._interval:
             self._interval.pause()
         if not self._death_played:
