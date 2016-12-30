@@ -57,11 +57,11 @@ class Bot(object):
 
         # Create an empty node to contain the actor, nametag, and FOV fan.
         self._model = NodePath('bot')
-        self._model.reparentTo(render)
-        self._model.setPos(position)
-        self._model.setHpr(direction, 0, 0)
-        self._model.setColorScale(*self.team)
-        self._model.setScale(.2, .2, .2)
+        self._model.reparent_to(render)
+        self._model.set_pos(position)
+        self._model.set_hpr(direction, 0, 0)
+        self._model.set_color_scale(*self.team)
+        self._model.set_scale(.2, .2, .2)
 
         # Load the animations
         self._actor = Actor("models/RockGolem", {
@@ -77,15 +77,15 @@ class Bot(object):
         self._actor.setPlayRate(4, 'punch')
         self._actor.setPlayRate(5.25, 'throw')
         self._actor.setBlend(frameBlend=True)
-        self._actor.reparentTo(self._model)
+        self._actor.reparent_to(self._model)
         self._actor.loop('idle')
-        self._actor.setH(180)
+        self._actor.set_h(180)
 
         # Floating Name Label
-        text = TextNode('node name')
-        text.setText(self.__class__.__name__)
-        text.setAlign(TextNode.ACenter)
-        self._name_label = self._model.attachNewNode(text)
+        label = TextNode('node name')
+        label.set_text(self.__class__.__name__)
+        label.setAlign(TextNode.ACenter)
+        self._name_label = self._model.attach_new_node(label)
         self._name_label.setBillboardPointEye()
         self._name_label.setPos(Vec3(0, 0, 6))
         self._name_label.setScale(3, 3, 3)
@@ -153,7 +153,9 @@ class Bot(object):
         return self.__class__.__name__
 
     def _get_orders(self, tick_number, visible_objects):
-        # noinspection PyBroadException
+        if not self.alive:
+            return
+
         try:
             self._orders = self.update(tick_number, visible_objects)
         except Exception as e:

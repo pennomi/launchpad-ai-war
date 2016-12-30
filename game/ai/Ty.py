@@ -7,7 +7,6 @@ class Bae(Bot):
     """Move toward enemies and punch them."""
 
     def update(self, tick_number, visible_objects):
-        self._name_label.setScale(4, 4, 4)
         v = None
         for v in visible_objects:
             if v.position == self.position + self.direction and v.team != self.team:
@@ -32,7 +31,6 @@ class SideBae(Bot):
     """Move toward enemies and punch them."""
 
     def update(self, tick_number, visible_objects):
-        self._name_label.setScale(4, 4, 4)
         v = None
         for v in visible_objects:
             if v.position == self.position + self.direction and v.team != self.team:

@@ -90,12 +90,13 @@ class BattleArena:
         # First get all orders (so later bots don't have more information)
         for b in living_bots:
             b._get_orders(self.tick, self.get_visible_objects(b))
-        # Then move everyone (so we can dodge)
         # TODO: Instead sort the list by action priority then iterate once
-        for b in [b for b in living_bots if b._orders != Actions.Punch]:
-            b._execute_orders(dt, self)
-        # Punching comes last
+        # TODO: For instance, suicide comes first
+        # Punching comes first
         for b in [b for b in living_bots if b._orders == Actions.Punch]:
+            b._execute_orders(dt, self)
+        # Then move everyone (no dodging!)
+        for b in [b for b in living_bots if b._orders != Actions.Punch]:
             b._execute_orders(dt, self)
 
         # Play the sound that summarizes this round best
