@@ -93,6 +93,9 @@ class Bot(object):
         # Increment the number of games played
         self.record_stat("games", 1)
 
+    def __str__(self):
+        return self.name
+
     def update(self, tick_number, visible_objects):
         """Subclass and implement this method to make your own bot!"""
         raise NotImplementedError()
@@ -125,6 +128,7 @@ class Bot(object):
         # TODO: Have both model and "game position" so low framerate is ok.
         p = self._model.getPos()
         return Vec3(round(p.x, 0), round(p.y, 0), round(p.z, 0))
+        # return Vec3(self._position)
 
     @property
     def direction(self):
@@ -133,6 +137,16 @@ class Bot(object):
         v = render.getRelativeVector(self._model, Vec3(0, 1, 0))
         v.normalize()
         return Vec3(round(v.x, 0), round(v.y, 0), round(v.z, 0))
+
+    @property
+    def right_direction(self):
+        """Return a unit vector pointing to the bot's right."""
+        return Vec3(self.direction.y, -self.direction.x, self.direction.z)
+
+    @property
+    def left_direction(self):
+        """Return a unit vector pointing to the bot's right."""
+        return Vec3(-self.direction.y, self.direction.x, self.direction.z)
 
     @property
     def name(self):
@@ -203,6 +217,7 @@ class Bot(object):
             battle.announcer.announce("{} killed itself.".format(self.name))
             self.die()
             self.record_stat("suicides", 1)
+            # TODO: Can we track "denies" as well?
 
         else:  # Bad orders detected! Kill this bot.
             battle.announcer.announce("{} made an illegal move and died.".format(self.name))
@@ -213,7 +228,7 @@ class Bot(object):
         if not self.alive:
             return
         self._interval = LerpPosHprInterval(
-            self._model, tick_length-0.05, new_pos, new_dir)
+            self._model, tick_length, new_pos, new_dir)
         self._interval.start()
 
     def safe_loop(self, animation):
@@ -222,16 +237,7 @@ class Bot(object):
         if self._actor.getCurrentAnim() != animation:
             self._actor.loop(animation)
 
-    def punch(self, battle):
-        # Ensure mutual kills animate correctly
-        if not self._death_played:
-            self._actor.play('punch')
-
-        # Check if anything is in the bot's way.
-        hazard = self.direction + self.position
-        bot = battle.get_object_at_position(hazard)
-        if not isinstance(bot, Bot):
-            return
+    def _kill(self, bot, battle):
         bot.die()
 
         # Show the standard kill text
@@ -253,6 +259,23 @@ class Bot(object):
             battle.announcer.announce(
                 message.format(self.name, self.kills),
                 color=Color.Orange, sfx=sfx)
+
+    def punch(self, battle):
+        """Check the bots on the squares """
+        # Ensure mutual kills animate correctly
+        if not self._death_played:
+            self._actor.play('punch')
+
+        # Check the square in front of the bot and on the bot's square
+        bots = (
+            battle.get_bots_at_position(self.direction + self.position) +
+            battle.get_bots_at_position(self.position)
+        )
+
+        # Annihilate those bots
+        for bot in bots:
+            if bot is not self:
+                self._kill(bot, battle)
 
     def die(self):
         self.alive = False

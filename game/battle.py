@@ -9,7 +9,9 @@ from game.announcer import Announcer, Announcement, make_label, Color
 from game.bot import Bot, Actions
 
 
-RESET_TIMER = 90  # 1.5 minutes
+# TODO: What if the reset timer was the amount of time since the last death?
+# TODO: 15-20 seconds would be fine there
+RESET_TIMER = 60  # 1 minute
 
 
 # noinspection PyProtectedMember
@@ -36,6 +38,8 @@ class BattleArena:
         self.reset()
 
     def reset(self):
+        # TODO: Add some sort of start/end animation?
+
         # Clean up messages
         self.announcer.reset()
 
@@ -66,6 +70,22 @@ class BattleArena:
         """
         self.tick += 1
 
+        # Check reset parameters
+        living_bots = [b for b in self.bots if b.alive]
+        if not living_bots:  # Everyone's dead
+            self.reset()
+        elif self.tick > RESET_TIMER:  # Out of time
+            self.reset()
+        elif len({b.team for b in living_bots}) == 1:  # Only one team left
+            self.reset()
+
+        # Update the reset timer
+        self.reset_label.setText(
+            "{} seconds left in match".format(RESET_TIMER - self.tick))
+
+        # Calculate any collisions between any bots from last time
+        self._kill_overlapping_bots()
+
         living_bots = [b for b in self.bots if b.alive]
         # First get all orders (so later bots don't have more information)
         for b in living_bots:
@@ -78,44 +98,25 @@ class BattleArena:
         for b in [b for b in living_bots if b._orders == Actions.Punch]:
             b._execute_orders(dt, self)
 
-        # Calculate any collisions between any bots
-        self._kill_overlapping_bots()
-
-        # Check reset parameters
-        if not living_bots:  # Everyone's dead
-            self.reset()
-        elif self.tick > RESET_TIMER:  # Out of time
-            self.reset()
-        elif len({b.team for b in living_bots}) == 1:  # Only one team left
-            self.reset()
-
-        # Update the reset timer
-        self.reset_label.setText(
-            "{} seconds left in match".format(RESET_TIMER - self.tick))
-
         # Play the sound that summarizes this round best
         self.announcer.play_sound()
 
-    def get_object_at_position(self, v):
-        for b in self.bots:
-            if b.position == v and b.alive:
-                return b
-        return None
+    def get_bots_at_position(self, v):
+        return [b for b in self.bots if b.position == v and b.alive]
 
     def _kill_overlapping_bots(self):
         """Calculate which bots are at the same position and kill them."""
         for b in self.bots:
             if not b.alive:
                 continue
-            other = self.get_object_at_position(b.position)
-            if other and b and other != b:
+            bots = self.get_bots_at_position(b.position)
+            if len(bots) > 1:
                 self.announcer.announce(
-                    "{} and {} collided!".format(b.name, other.name),
+                    "{} collided!".format(" & ".join(str(b) for b in bots)),
                     sfx=Announcement.Carnage)
-                b.die()
-                other.die()
-                b.record_stat("collisions", 1)
-                other.record_stat("collisions", 1)
+                for _ in bots:
+                    _.die()
+                    _.record_stat("collisions", 1)
 
     def get_classes(self):
         """Dynamically import all Bot subclasses from files at `game.ai.*`
@@ -147,7 +148,7 @@ class BattleArena:
                 continue
 
             # Get the relative vector of the bots
-            v = other._model.getPos() - bot._model.getPos()
+            v = other.position - bot.position
             v.normalize()
 
             # Get the angle between the two vectors
@@ -186,7 +187,7 @@ class BattleArena:
             center = Vec3(0, 0, 0)
 
         # Smoothly interpolate.
-        camera_speed = 2 * dt
+        camera_speed = dt
         self.camera_pos += (camera_pos - self.camera_pos) * camera_speed
         self.camera_look += (center - self.camera_look) * camera_speed
         camera.setPos(render, *self.camera_pos)
